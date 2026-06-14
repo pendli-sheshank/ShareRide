@@ -34,6 +34,34 @@ SawaariShare — a cost-sharing carpool coordination app for Indian students in 
 
 Single account with two switchable modes (Rider / Host). Host mode requires vehicle details. Three verification tiers: Phone-only → Vouched (invite) → ID-Verified (manual review).
 
+## Development
+
+```bash
+cd app
+npm install              # install dependencies
+npm start                # start Expo dev server
+npm run android          # run on Android emulator/device
+npm run ios              # run on iOS simulator (macOS only)
+npx tsc --noEmit         # type check
+```
+
+Environment setup: copy `app/.env.example` to `app/.env` and fill in your Supabase project URL and anon key.
+
+### Project structure
+
+```
+app/
+  src/
+    app/              # expo-router file-based routes
+      auth/           # login, onboarding screens
+      (tabs)/         # main tab screens (rides feed, post, chat, profile)
+    lib/              # supabase client
+    hooks/            # React hooks (useAuth, etc.)
+    types/            # TypeScript types matching Supabase schema
+    constants/        # theme (colors, spacing, fonts)
+    components/       # shared UI components
+```
+
 ## Key Constraints
 
 - Cost contributions are capped at 2× the calculated per-rider cost, enforced server-side
