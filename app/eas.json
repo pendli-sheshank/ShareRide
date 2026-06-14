@@ -41,18 +41,5 @@
         "EXPO_PUBLIC_SUPABASE_ANON_KEY": "@EXPO_PUBLIC_SUPABASE_ANON_KEY"
       }
     }
-  },
-  "submit": {
-    "production": {
-      "android": {
-        "serviceAccountKeyPath": "./google-services.json",
-        "track": "internal"
-      },
-      "ios": {
-        "appleId": "",
-        "ascAppId": "",
-        "appleTeamId": ""
-      }
-    }
   }
 }
