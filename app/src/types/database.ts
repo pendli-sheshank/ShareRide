@@ -4,6 +4,8 @@ export type TripStatus = "active" | "full" | "cancelled" | "completed";
 export type RequestStatus = "open" | "matched" | "cancelled";
 export type MatchStatus = "pending" | "confirmed" | "declined" | "cancelled" | "completed";
 
+export type Gender = "male" | "female" | "non_binary" | "prefer_not_to_say";
+
 export interface User {
   id: string;
   phone: string;
@@ -15,7 +17,12 @@ export interface User {
   invited_by: string | null;
   verified_tier: VerifiedTier;
   rating_avg: number;
+  rating_count: number;
   no_show_count: number;
+  gender: Gender | null;
+  push_token: string | null;
+  id_doc_url: string | null;
+  id_verified_at: string | null;
   created_at: string;
   deleted_at: string | null;
 }
@@ -54,6 +61,8 @@ export interface TripOffer {
   tolls: number;
   cost_estimate: number;
   women_only: boolean;
+  share_token: string | null;
+  parent_offer_id: string | null;
   status: TripStatus;
 }
 
@@ -82,6 +91,7 @@ export interface TripMatch {
   status: MatchStatus;
   rated_by_host: boolean;
   rated_by_rider: boolean;
+  no_show: boolean;
 }
 
 export interface Rating {

@@ -6,14 +6,19 @@ import {
   StyleSheet,
   ScrollView,
   Alert,
+  Share,
 } from "react-native";
+import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
 import { User } from "../../types/database";
+import { VerificationBadge } from "../../components/VerificationBadge";
+import { NoShowIndicator } from "../../components/NoShowIndicator";
 import { colors, spacing, fontSizes, borderRadius } from "../../constants/theme";
 
 export default function ProfileScreen() {
+  const router = useRouter();
   const { user: authUser } = useAuth();
   const [profile, setProfile] = useState<User | null>(null);
 
@@ -44,11 +49,52 @@ export default function ProfileScreen() {
     ]);
   }
 
-  const tierLabels: Record<string, string> = {
-    phone_only: "Phone Verified",
-    vouched: "Vouched",
-    id_verified: "ID Verified",
-  };
+  async function handleUploadId() {
+    Alert.alert(
+      "ID Verification",
+      "ID verification coming soon. You will be able to upload a government-issued ID for manual review."
+    );
+  }
+
+  async function handleInviteFriends() {
+    if (!authUser) return;
+    try {
+      const { data, error } = await supabase
+        .from("invites")
+        .select("code")
+        .eq("created_by", authUser.id)
+        .is("used_by", null);
+
+      if (error) {
+        Alert.alert("Error", "Could not fetch invite codes.");
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        Alert.alert("No Invites", "You have no unused invite codes available.");
+        return;
+      }
+
+      const codes = data.map((inv) => inv.code).join("\n");
+      Alert.alert(
+        "Your Invite Codes",
+        `Share these codes with friends:\n\n${codes}`,
+        [
+          { text: "Cancel", style: "cancel" },
+          {
+            text: "Share",
+            onPress: async () => {
+              await Share.share({
+                message: `Join SawaariShare! Use one of my invite codes:\n${codes}`,
+              });
+            },
+          },
+        ]
+      );
+    } catch {
+      Alert.alert("Error", "Something went wrong.");
+    }
+  }
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -60,12 +106,10 @@ export default function ProfileScreen() {
           {profile?.first_name ?? "User"} {profile?.last_initial ?? ""}.
         </Text>
         <View style={styles.badgeRow}>
-          <View style={styles.badge}>
-            <Ionicons name="shield-checkmark" size={14} color={colors.success} />
-            <Text style={styles.badgeText}>
-              {tierLabels[profile?.verified_tier ?? "phone_only"]}
-            </Text>
-          </View>
+          <VerificationBadge
+            tier={profile?.verified_tier ?? "phone_only"}
+            size="md"
+          />
         </View>
       </View>
 
@@ -83,10 +127,26 @@ export default function ProfileScreen() {
         </View>
       </View>
 
+      <NoShowIndicator count={profile?.no_show_count ?? 0} />
+
       <View style={styles.menuSection}>
         <MenuItem icon="car-outline" label="My Vehicles" />
         <MenuItem icon="time-outline" label="Trip History" />
-        <MenuItem icon="wallet-outline" label="Cost Recovery" />
+        <MenuItem
+          icon="wallet-outline"
+          label="Cost Recovery"
+          onPress={() => router.push("/cost-recovery")}
+        />
+        <MenuItem
+          icon="id-card-outline"
+          label="Upload ID"
+          onPress={handleUploadId}
+        />
+        <MenuItem
+          icon="people-outline"
+          label="Invite Friends"
+          onPress={handleInviteFriends}
+        />
         <MenuItem icon="settings-outline" label="Settings" />
         <MenuItem icon="help-circle-outline" label="Help & Support" />
       </View>
@@ -99,9 +159,9 @@ export default function ProfileScreen() {
   );
 }
 
-function MenuItem({ icon, label }: { icon: React.ComponentProps<typeof Ionicons>["name"]; label: string }) {
+function MenuItem({ icon, label, onPress }: { icon: React.ComponentProps<typeof Ionicons>["name"]; label: string; onPress?: () => void }) {
   return (
-    <TouchableOpacity style={menuStyles.item}>
+    <TouchableOpacity style={menuStyles.item} onPress={onPress}>
       <Ionicons name={icon} size={22} color={colors.text} />
       <Text style={menuStyles.label}>{label}</Text>
       <Ionicons name="chevron-forward" size={18} color={colors.textLight} />
@@ -139,20 +199,6 @@ const styles = StyleSheet.create({
   badgeRow: {
     flexDirection: "row",
     marginTop: spacing.sm,
-  },
-  badge: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    backgroundColor: colors.success + "15",
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-    borderRadius: borderRadius.full,
-  },
-  badgeText: {
-    fontSize: fontSizes.xs,
-    fontWeight: "600",
-    color: colors.success,
   },
   statsRow: {
     flexDirection: "row",

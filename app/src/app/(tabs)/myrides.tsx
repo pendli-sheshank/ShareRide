@@ -51,6 +51,24 @@ interface RiderSection {
 
 // --------------- Helpers ---------------
 
+function formatRecurringDays(rrule: string): string {
+  const match = rrule.match(/BYDAY=([A-Z,]+)/);
+  if (!match) return "";
+  const codeToLabel: Record<string, string> = {
+    SU: "Sun",
+    MO: "Mon",
+    TU: "Tue",
+    WE: "Wed",
+    TH: "Thu",
+    FR: "Fri",
+    SA: "Sat",
+  };
+  return match[1]
+    .split(",")
+    .map((code) => codeToLabel[code] ?? code)
+    .join(", ");
+}
+
 function formatDateTime(iso: string) {
   const d = new Date(iso);
   const time = d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
@@ -176,6 +194,15 @@ function HostTab({
             </Text>
           </View>
         </View>
+
+        {offer.recurring_rule ? (
+          <View style={styles.recurringRow}>
+            <Ionicons name="repeat-outline" size={14} color={colors.secondary} />
+            <Text style={styles.recurringText}>
+              Repeats: {formatRecurringDays(offer.recurring_rule)}
+            </Text>
+          </View>
+        ) : null}
 
         {section.data.length > 0 && (
           <Text style={styles.pendingHeader}>
@@ -343,6 +370,14 @@ function RiderTab({
               <Text style={styles.metaText}>{req.seats_needed} seat(s)</Text>
             </View>
           </View>
+          {req.recurring_rule ? (
+            <View style={styles.recurringRow}>
+              <Ionicons name="repeat-outline" size={14} color={colors.secondary} />
+              <Text style={styles.recurringText}>
+                Repeats: {formatRecurringDays(req.recurring_rule)}
+              </Text>
+            </View>
+          ) : null}
         </View>
       );
     }
@@ -379,20 +414,30 @@ function RiderTab({
         </View>
 
         {offer && (
-          <View style={styles.metaRow}>
-            <View style={styles.metaItem}>
-              <Ionicons name="time-outline" size={14} color={colors.textSecondary} />
-              <Text style={styles.metaText}>{formatDateTime(offer.depart_at)}</Text>
-            </View>
-            {host && (
+          <>
+            <View style={styles.metaRow}>
               <View style={styles.metaItem}>
-                <Ionicons name="person-outline" size={14} color={colors.textSecondary} />
-                <Text style={styles.metaText}>
-                  {host.first_name} {host.last_initial}.
+                <Ionicons name="time-outline" size={14} color={colors.textSecondary} />
+                <Text style={styles.metaText}>{formatDateTime(offer.depart_at)}</Text>
+              </View>
+              {host && (
+                <View style={styles.metaItem}>
+                  <Ionicons name="person-outline" size={14} color={colors.textSecondary} />
+                  <Text style={styles.metaText}>
+                    {host.first_name} {host.last_initial}.
+                  </Text>
+                </View>
+              )}
+            </View>
+            {offer.recurring_rule ? (
+              <View style={styles.recurringRow}>
+                <Ionicons name="repeat-outline" size={14} color={colors.secondary} />
+                <Text style={styles.recurringText}>
+                  Repeats: {formatRecurringDays(offer.recurring_rule)}
                 </Text>
               </View>
-            )}
-          </View>
+            ) : null}
+          </>
         )}
 
         <View style={styles.actionRow}>
@@ -921,6 +966,19 @@ const styles = StyleSheet.create({
     fontSize: fontSizes.sm,
     fontWeight: "600",
     color: colors.error,
+  },
+
+  // Recurring
+  recurringRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    marginTop: spacing.sm,
+  },
+  recurringText: {
+    fontSize: fontSizes.xs,
+    color: colors.secondary,
+    fontWeight: "500",
   },
 
   // Empty state

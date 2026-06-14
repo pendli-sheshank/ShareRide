@@ -14,6 +14,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../hooks/useAuth";
 import { colors, spacing, fontSizes, borderRadius } from "../../constants/theme";
+import { DayPicker } from "../../components/DayPicker";
 
 type Mode = "offer" | "request";
 
@@ -27,13 +28,37 @@ export default function PostScreen() {
   const [seats, setSeats] = useState("3");
   const [tolls, setTolls] = useState("0");
   const [womenOnly, setWomenOnly] = useState(false);
+  const [recurring, setRecurring] = useState(false);
+  const [selectedDays, setSelectedDays] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
+
+  function handleToggleDay(day: string) {
+    setSelectedDays((prev) =>
+      prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]
+    );
+  }
+
+  function buildRRule(days: string[]): string | null {
+    if (days.length === 0) return null;
+    const dayOrder = ["MO", "TU", "WE", "TH", "FR", "SA", "SU"];
+    const sorted = [...days].sort(
+      (a, b) => dayOrder.indexOf(a) - dayOrder.indexOf(b)
+    );
+    return `FREQ=WEEKLY;BYDAY=${sorted.join(",")}`;
+  }
 
   async function handlePost() {
     if (!origin.trim() || !destination.trim()) {
       Alert.alert("Required", "Please enter origin and destination.");
       return;
     }
+
+    if (recurring && selectedDays.length === 0) {
+      Alert.alert("Required", "Please select at least one day for your recurring trip.");
+      return;
+    }
+
+    const recurringRule = recurring ? buildRRule(selectedDays) : null;
 
     setLoading(true);
 
@@ -47,6 +72,7 @@ export default function PostScreen() {
         seats_left: parseInt(seats) || 3,
         tolls: parseFloat(tolls) || 0,
         women_only: womenOnly,
+        recurring_rule: recurringRule,
         status: "active",
       });
 
@@ -65,6 +91,7 @@ export default function PostScreen() {
         window_start: departTime || new Date().toISOString(),
         window_end: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
         seats_needed: parseInt(seats) || 1,
+        recurring_rule: recurringRule,
         status: "open",
       });
 
@@ -182,6 +209,26 @@ export default function PostScreen() {
           </>
         )}
 
+        <View style={styles.switchRow}>
+          <Text style={styles.label}>Recurring</Text>
+          <Switch
+            value={recurring}
+            onValueChange={(val) => {
+              setRecurring(val);
+              if (!val) setSelectedDays([]);
+            }}
+            trackColor={{ true: colors.primaryLight, false: colors.border }}
+            thumbColor={recurring ? colors.primary : colors.textLight}
+          />
+        </View>
+
+        {recurring && (
+          <View style={styles.dayPickerWrapper}>
+            <Text style={styles.dayPickerHint}>Repeats every</Text>
+            <DayPicker selectedDays={selectedDays} onToggle={handleToggleDay} />
+          </View>
+        )}
+
         <TouchableOpacity
           style={[styles.button, loading && styles.buttonDisabled]}
           onPress={handlePost}
@@ -260,6 +307,14 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     marginTop: spacing.sm,
+  },
+  dayPickerWrapper: {
+    marginTop: spacing.sm,
+    gap: spacing.sm,
+  },
+  dayPickerHint: {
+    fontSize: fontSizes.xs,
+    color: colors.textSecondary,
   },
   button: {
     backgroundColor: colors.primary,

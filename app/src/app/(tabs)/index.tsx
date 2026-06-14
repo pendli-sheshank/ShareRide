@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import {
   View,
   Text,
@@ -6,16 +6,38 @@ import {
   TouchableOpacity,
   StyleSheet,
   RefreshControl,
+  ScrollView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { supabase } from "../../lib/supabase";
 import { TripOffer } from "../../types/database";
 import { colors, spacing, fontSizes, borderRadius } from "../../constants/theme";
+import { ShareTripButton } from "../../components/ShareTripButton";
 
-function TripCard({ trip }: { trip: TripOffer & { host?: { first_name: string; last_initial: string; rating_avg: number } } }) {
+type TripWithHost = TripOffer & {
+  host?: { first_name: string; last_initial: string; rating_avg: number; verified_tier?: string };
+  vehicle?: { make_model: string; color: string; plate_no: string };
+  share_token?: string;
+};
+
+type SortMode = "soonest" | "cheapest";
+
+function TripCard({ trip }: { trip: TripWithHost }) {
   const departDate = new Date(trip.depart_at);
   const timeStr = departDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   const dateStr = departDate.toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" });
+
+  const shareOffer = {
+    host_name: `${trip.host?.first_name ?? "Host"} ${trip.host?.last_initial ?? ""}`.trim(),
+    vehicle_make_model: trip.vehicle?.make_model ?? "Vehicle",
+    vehicle_color: trip.vehicle?.color ?? "",
+    vehicle_plate_no: trip.vehicle?.plate_no ?? "",
+    origin_label: trip.origin_label ?? "Pickup point",
+    dest_label: trip.dest_label ?? "Destination",
+    depart_at: trip.depart_at,
+    cost_estimate: trip.cost_estimate,
+    share_token: trip.share_token ?? trip.id,
+  };
 
   return (
     <TouchableOpacity style={styles.card}>
@@ -36,8 +58,11 @@ function TripCard({ trip }: { trip: TripOffer & { host?: { first_name: string; l
             </View>
           </View>
         </View>
-        <View style={styles.costBadge}>
-          <Text style={styles.costText}>${trip.cost_estimate.toFixed(0)}/seat</Text>
+        <View style={styles.headerRight}>
+          <ShareTripButton offer={shareOffer} variant="icon" />
+          <View style={styles.costBadge}>
+            <Text style={styles.costText}>${trip.cost_estimate.toFixed(0)}/seat</Text>
+          </View>
         </View>
       </View>
 
@@ -72,15 +97,30 @@ function TripCard({ trip }: { trip: TripOffer & { host?: { first_name: string; l
   );
 }
 
+type FilterChipKey = "all" | "women_only" | "verified_hosts";
+
+const FILTER_CHIPS: { key: FilterChipKey; label: string }[] = [
+  { key: "all", label: "All" },
+  { key: "women_only", label: "Women Only" },
+  { key: "verified_hosts", label: "Verified Hosts" },
+];
+
+const SORT_CHIPS: { key: SortMode; label: string }[] = [
+  { key: "soonest", label: "Sort: Soonest" },
+  { key: "cheapest", label: "Sort: Cheapest" },
+];
+
 export default function RidesScreen() {
-  const [trips, setTrips] = useState<TripOffer[]>([]);
+  const [trips, setTrips] = useState<TripWithHost[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [activeFilters, setActiveFilters] = useState<Set<FilterChipKey>>(new Set(["all"]));
+  const [sortMode, setSortMode] = useState<SortMode>("soonest");
 
   const fetchTrips = useCallback(async () => {
     const { data, error } = await supabase
       .from("trip_offers")
-      .select("*, host:users!host_id(first_name, last_initial, rating_avg)")
+      .select("*, host:users!host_id(first_name, last_initial, rating_avg, verified_tier), vehicle:vehicles!vehicle_id(make_model, color, plate_no)")
       .eq("status", "active")
       .gt("seats_left", 0)
       .gte("depart_at", new Date().toISOString())
@@ -88,7 +128,7 @@ export default function RidesScreen() {
       .limit(30);
 
     if (!error && data) {
-      setTrips(data as TripOffer[]);
+      setTrips(data as TripWithHost[]);
     }
     setLoading(false);
   }, []);
@@ -103,13 +143,88 @@ export default function RidesScreen() {
     setRefreshing(false);
   }, [fetchTrips]);
 
+  const toggleFilter = useCallback((key: FilterChipKey) => {
+    setActiveFilters((prev) => {
+      const next = new Set(prev);
+      if (key === "all") {
+        return new Set(["all"]);
+      }
+      next.delete("all");
+      if (next.has(key)) {
+        next.delete(key);
+      } else {
+        next.add(key);
+      }
+      return next.size === 0 ? new Set<FilterChipKey>(["all"]) : next;
+    });
+  }, []);
+
+  const filteredTrips = useMemo(() => {
+    let result = trips;
+
+    if (!activeFilters.has("all")) {
+      if (activeFilters.has("women_only")) {
+        result = result.filter((t) => t.women_only);
+      }
+      if (activeFilters.has("verified_hosts")) {
+        result = result.filter(
+          (t) => t.host?.verified_tier === "id_verified" || t.host?.verified_tier === "vouched"
+        );
+      }
+    }
+
+    const sorted = [...result];
+    if (sortMode === "cheapest") {
+      sorted.sort((a, b) => a.cost_estimate - b.cost_estimate);
+    } else {
+      sorted.sort((a, b) => new Date(a.depart_at).getTime() - new Date(b.depart_at).getTime());
+    }
+    return sorted;
+  }, [trips, activeFilters, sortMode]);
+
+  const renderFilterBar = () => (
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={styles.filterBar}
+      style={styles.filterBarContainer}
+    >
+      {FILTER_CHIPS.map(({ key, label }) => {
+        const isActive = activeFilters.has(key);
+        return (
+          <TouchableOpacity
+            key={key}
+            style={[styles.chip, isActive && styles.chipActive]}
+            onPress={() => toggleFilter(key)}
+          >
+            <Text style={[styles.chipText, isActive && styles.chipTextActive]}>{label}</Text>
+          </TouchableOpacity>
+        );
+      })}
+      <View style={styles.chipDivider} />
+      {SORT_CHIPS.map(({ key, label }) => {
+        const isActive = sortMode === key;
+        return (
+          <TouchableOpacity
+            key={key}
+            style={[styles.chip, isActive && styles.chipActive]}
+            onPress={() => setSortMode(key)}
+          >
+            <Text style={[styles.chipText, isActive && styles.chipTextActive]}>{label}</Text>
+          </TouchableOpacity>
+        );
+      })}
+    </ScrollView>
+  );
+
   return (
     <View style={styles.container}>
       <FlatList
-        data={trips}
+        data={filteredTrips}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => <TripCard trip={item} />}
         contentContainerStyle={styles.list}
+        ListHeaderComponent={renderFilterBar}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />
         }
@@ -150,6 +265,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+  },
+  headerRight: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
   },
   hostInfo: {
     flexDirection: "row",
@@ -258,5 +378,41 @@ const styles = StyleSheet.create({
     fontSize: fontSizes.sm,
     color: colors.textSecondary,
     textAlign: "center",
+  },
+  filterBarContainer: {
+    flexGrow: 0,
+    marginBottom: spacing.sm,
+  },
+  filterBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
+    paddingVertical: spacing.xs,
+  },
+  chip: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: borderRadius.full,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  chipActive: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  chipText: {
+    fontSize: fontSizes.sm,
+    fontWeight: "500",
+    color: colors.text,
+  },
+  chipTextActive: {
+    color: colors.white,
+  },
+  chipDivider: {
+    width: 1,
+    height: 24,
+    backgroundColor: colors.border,
+    marginHorizontal: spacing.xs,
   },
 });
