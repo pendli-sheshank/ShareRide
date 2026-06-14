@@ -62,7 +62,7 @@ export default function ProfileScreen() {
       const { data, error } = await supabase
         .from("invites")
         .select("code")
-        .eq("created_by", authUser.id)
+        .eq("owner_id", authUser.id)
         .is("used_by", null);
 
       if (error) {

@@ -7,18 +7,34 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "scheme": "sawaari-share",
+    "newArchEnabled": true,
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.sawaarishare.app"
+      "bundleIdentifier": "com.sawaarishare.app",
+      "infoPlist": {
+        "NSCameraUsageDescription": "SawaariShare needs camera access to upload your profile photo or ID document.",
+        "NSPhotoLibraryUsageDescription": "SawaariShare needs photo library access to select your profile photo or ID document."
+      },
+      "config": {
+        "usesNonExemptEncryption": false
+      },
+      "buildNumber": "1"
     },
     "android": {
       "package": "com.sawaarishare.app",
+      "versionCode": 1,
       "adaptiveIcon": {
         "backgroundColor": "#FF6B35",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
-      }
+      },
+      "permissions": [
+        "INTERNET",
+        "VIBRATE",
+        "RECEIVE_BOOT_COMPLETED"
+      ],
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -32,7 +48,8 @@
         "expo-notifications",
         {
           "icon": "./assets/icon.png",
-          "color": "#FF6B35"
+          "color": "#FF6B35",
+          "defaultChannel": "default"
         }
       ]
     ],
@@ -40,6 +57,13 @@
       "eas": {
         "projectId": ""
       }
+    },
+    "owner": "",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": ""
     }
   }
 }
