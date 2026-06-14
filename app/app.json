@@ -55,7 +55,7 @@
     ],
     "extra": {
       "eas": {
-        "projectId": ""
+        "projectId": "44618a94-67dc-44e7-a0f3-df236b19505b"
       }
     },
     "owner": "",
@@ -63,7 +63,7 @@
       "policy": "appVersion"
     },
     "updates": {
-      "url": ""
+      "url": "https://u.expo.dev/44618a94-67dc-44e7-a0f3-df236b19505b"
     }
   }
 }
