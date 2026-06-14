@@ -41,7 +41,9 @@ export interface TripOffer {
   host_id: string;
   vehicle_id: string;
   origin_geo: GeoPoint;
+  origin_label: string | null;
   dest_geo: GeoPoint;
+  dest_label: string | null;
   route_polyline: string | null;
   depart_at: string;
   recurring_rule: string | null;
@@ -59,7 +61,9 @@ export interface RideRequest {
   id: string;
   rider_id: string;
   pickup_geo: GeoPoint;
+  pickup_label: string | null;
   dest_geo: GeoPoint;
+  dest_label: string | null;
   window_start: string;
   window_end: string;
   seats_needed: number;
@@ -71,8 +75,10 @@ export interface TripMatch {
   id: string;
   offer_id: string;
   request_id: string | null;
+  rider_id: string;
   contribution: number;
   cost_cap: number;
+  note: string | null;
   status: MatchStatus;
   rated_by_host: boolean;
   rated_by_rider: boolean;

@@ -27,7 +27,14 @@
       ["expo-router", { "root": "./src/app" }],
       "expo-splash-screen",
       "expo-secure-store",
-      "expo-font"
+      "expo-font",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#FF6B35"
+        }
+      ]
     ],
     "extra": {
       "eas": {
