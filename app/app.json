@@ -33,8 +33,7 @@
         "INTERNET",
         "VIBRATE",
         "RECEIVE_BOOT_COMPLETED"
-      ],
-      "googleServicesFile": "./google-services.json"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
