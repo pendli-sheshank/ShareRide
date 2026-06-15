@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "SawaariShare",
-    "slug": "sawaari-share",
+    "slug": "rideshare",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
