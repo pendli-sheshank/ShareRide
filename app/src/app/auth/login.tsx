@@ -13,6 +13,13 @@ import { useRouter } from "expo-router";
 import { supabase } from "../../lib/supabase";
 import { colors, spacing, fontSizes, borderRadius } from "../../constants/theme";
 
+// Normalizes user input into E.164 format (e.g. "+1 (555) 000-0000" -> "+15550000000")
+// since Supabase's phone auth rejects numbers containing spaces, dashes, or parentheses.
+function toE164(phone: string): string {
+  const digits = phone.trim().replace(/\D/g, "");
+  return phone.trim().startsWith("+") ? `+${digits}` : `+1${digits}`;
+}
+
 export default function LoginScreen() {
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState("");
@@ -21,14 +28,13 @@ export default function LoginScreen() {
   const router = useRouter();
 
   async function sendOtp() {
-    if (phone.length < 10) {
+    if (phone.replace(/\D/g, "").length < 10) {
       Alert.alert("Invalid Number", "Please enter a valid phone number.");
       return;
     }
 
     setLoading(true);
-    const formattedPhone = phone.startsWith("+") ? phone : `+1${phone}`;
-    const { error } = await supabase.auth.signInWithOtp({ phone: formattedPhone });
+    const { error } = await supabase.auth.signInWithOtp({ phone: toE164(phone) });
     setLoading(false);
 
     if (error) {
@@ -46,9 +52,8 @@ export default function LoginScreen() {
     }
 
     setLoading(true);
-    const formattedPhone = phone.startsWith("+") ? phone : `+1${phone}`;
     const { error } = await supabase.auth.verifyOtp({
-      phone: formattedPhone,
+      phone: toE164(phone),
       token: otp,
       type: "sms",
     });
