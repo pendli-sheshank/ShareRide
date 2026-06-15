@@ -4,6 +4,7 @@ import { StatusBar } from "expo-status-bar";
 import { ActivityIndicator, Text, View } from "react-native";
 import { enableScreens } from "react-native-screens";
 import { useAuth } from "../hooks/useAuth";
+import { ErrorBoundary } from "../components/ErrorBoundary";
 import { colors, spacing } from "../constants/theme";
 import { isSupabaseConfigured } from "../lib/supabase";
 
@@ -12,6 +13,17 @@ import { isSupabaseConfigured } from "../lib/supabase";
 // TurboModule bridge and aborting the process). Falling back to plain Views
 // avoids that native code path entirely.
 enableScreens(false);
+
+// On the New Architecture, reporting an uncaught fatal JS error to native
+// (RCTExceptionsManager.reportFatal) can itself throw inside the TurboModule
+// bridge, escalating to an uncatchable SIGABRT with no JS diagnostics.
+// Replacing the global handler with a plain console.error keeps the process
+// alive so the ErrorBoundary below can show what actually failed.
+if (typeof ErrorUtils !== "undefined") {
+  ErrorUtils.setGlobalHandler((error, isFatal) => {
+    console.error(isFatal ? "Fatal error:" : "Error:", error);
+  });
+}
 
 export default function RootLayout() {
   const { session, loading } = useAuth();
@@ -52,9 +64,9 @@ export default function RootLayout() {
   }
 
   return (
-    <>
+    <ErrorBoundary>
       <StatusBar style="dark" />
       <Slot />
-    </>
+    </ErrorBoundary>
   );
 }
