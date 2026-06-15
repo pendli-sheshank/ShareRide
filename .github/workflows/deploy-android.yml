@@ -32,5 +32,10 @@ jobs:
       - name: Build Android production app bundle
         run: eas build --platform android --profile production --non-interactive --wait
 
+      - name: Decode Google Play service account key
+        run: echo "${GOOGLE_SERVICE_ACCOUNT_KEY}" | base64 -d > google-service-account-key.json
+        env:
+          GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+
       - name: Submit to Play Store (internal track)
         run: eas submit --platform android --latest --profile production --non-interactive
