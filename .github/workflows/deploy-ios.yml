@@ -32,8 +32,8 @@ jobs:
       - name: Build iOS production app
         run: eas build --platform ios --profile production --non-interactive --wait
 
-      - name: Decode App Store Connect API key
-        run: echo "${ASC_API_KEY}" | base64 -d > asc-api-key.p8
+      - name: Write App Store Connect API key
+        run: printf '%s\n' "$ASC_API_KEY" > asc-api-key.p8
         env:
           ASC_API_KEY: ${{ secrets.ASC_API_KEY }}
 
