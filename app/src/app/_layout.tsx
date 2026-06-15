@@ -2,9 +2,16 @@ import { useEffect } from "react";
 import { Slot, useRouter, useSegments } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { ActivityIndicator, Text, View } from "react-native";
+import { enableScreens } from "react-native-screens";
 import { useAuth } from "../hooks/useAuth";
 import { colors, spacing } from "../constants/theme";
 import { isSupabaseConfigured } from "../lib/supabase";
+
+// react-native-screens' native UIViewController-backed screens crash on launch
+// on iOS 26 (NSException in RNS*Controller native code, surfaced via the
+// TurboModule bridge and aborting the process). Falling back to plain Views
+// avoids that native code path entirely.
+enableScreens(false);
 
 export default function RootLayout() {
   const { session, loading } = useAuth();
