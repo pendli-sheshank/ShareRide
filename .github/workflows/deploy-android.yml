@@ -3,12 +3,13 @@ name: Build Android (KMP)
 on:
   workflow_dispatch: {}   # manual trigger from any branch
   push:
-    branches: [main]
+    branches: [main, 'claude/**']
     paths:
       - 'androidApp/**'
       - 'shared/**'
       - '*.gradle.kts'
       - 'gradle/**'
+      - '.github/workflows/deploy-android.yml'
 
 jobs:
   build:
