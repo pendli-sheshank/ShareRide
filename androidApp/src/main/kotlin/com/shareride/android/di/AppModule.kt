@@ -1,7 +1,7 @@
 package com.shareride.android.di
 
-import com.shareride.BuildConfig
 import com.shareride.createSupabaseClient
+import com.shareride.android.BuildConfig
 import com.shareride.repository.AuthRepository
 import com.shareride.repository.TripRepository
 import dagger.Module
@@ -19,8 +19,8 @@ object AppModule {
     @Singleton
     fun provideSupabaseClient(): SupabaseClient =
         createSupabaseClient(
-            url = com.shareride.android.BuildConfig.SUPABASE_URL,
-            anonKey = com.shareride.android.BuildConfig.SUPABASE_ANON_KEY,
+            url = BuildConfig.SUPABASE_URL,
+            anonKey = BuildConfig.SUPABASE_ANON_KEY,
         )
 
     @Provides

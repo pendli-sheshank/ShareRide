@@ -11,6 +11,10 @@ packages:
     url: https://github.com/supabase/supabase-swift
     from: "2.5.0"
 
+configFiles:
+  Debug: Config.xcconfig
+  Release: Config.xcconfig
+
 targets:
   iosApp:
     type: application
@@ -34,6 +38,9 @@ targets:
           - UIInterfaceOrientationPortraitUpsideDown
         UILaunchScreen: {}
         ITSAppUsesNonExemptEncryption: false
+        # Injected at build time from Config.xcconfig / CI secrets
+        SUPABASE_URL: $(SUPABASE_URL)
+        SUPABASE_ANON_KEY: $(SUPABASE_ANON_KEY)
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.shareride.ios
@@ -43,6 +50,9 @@ targets:
         ENABLE_BITCODE: NO
         CURRENT_PROJECT_VERSION: "1"
         MARKETING_VERSION: "1.0.0"
+        # Build settings picked up from Config.xcconfig (local) or xcodebuild env vars (CI)
+        SUPABASE_URL: $(SUPABASE_URL)
+        SUPABASE_ANON_KEY: $(SUPABASE_ANON_KEY)
     dependencies:
       - package: Supabase
         product: Auth

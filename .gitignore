@@ -30,3 +30,8 @@ androidApp/release/
 # Node (admin panel)
 node_modules/
 .next/
+
+# iOS — local config (contains Supabase anon key)
+iosApp/Config.xcconfig
+iosApp/*.xcodeproj/
+iosApp/*.xcworkspace/

@@ -1,10 +1,21 @@
 import Foundation
 import Supabase
 
-enum SupabaseConfig {
-    // Anon key is public by design — security enforced by RLS on the server.
-    static let url = URL(string: "https://oqivckjpjtwishdnjumo.supabase.co")!
-    static let anonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9xaXZja2pwanR3aXNoZG5qdW1vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEzOTE3ODQsImV4cCI6MjA5Njk2Nzc4NH0.yEuLJXYvXgUzydgHtP4BRzFiccnyVDEd4SJYYMNFg8c"
+// URL and anon key are injected at build time via Info.plist build settings.
+// In CI they come from GitHub secrets; locally create iosApp/Config.xcconfig.
+private enum SupabaseConfig {
+    static let url: URL = {
+        let raw = Bundle.main.object(forInfoDictionaryKey: "SUPABASE_URL") as? String ?? ""
+        guard let url = URL(string: raw), !raw.isEmpty else {
+            fatalError("SUPABASE_URL missing from Info.plist — check Config.xcconfig or build settings")
+        }
+        return url
+    }()
+    static let anonKey: String = {
+        let key = Bundle.main.object(forInfoDictionaryKey: "SUPABASE_ANON_KEY") as? String ?? ""
+        precondition(!key.isEmpty, "SUPABASE_ANON_KEY missing from Info.plist — check Config.xcconfig")
+        return key
+    }()
 }
 
 let supabase = SupabaseClient(

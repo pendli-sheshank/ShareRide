@@ -18,6 +18,20 @@ jobs:
       - name: Install XcodeGen
         run: brew install xcodegen
 
+      # ── Create Config.xcconfig from secrets (no hardcoded keys in source) ───
+      - name: Create Config.xcconfig
+        working-directory: iosApp
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          cat > Config.xcconfig << EOF
+          SUPABASE_URL = ${SUPABASE_URL}
+          SUPABASE_ANON_KEY = ${SUPABASE_ANON_KEY}
+          APPLE_TEAM_ID = ${APPLE_TEAM_ID}
+          EOF
+
       - name: Generate Xcode project
         working-directory: iosApp
         run: xcodegen generate

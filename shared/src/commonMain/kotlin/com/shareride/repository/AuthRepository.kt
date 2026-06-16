@@ -2,8 +2,8 @@ package com.shareride.repository
 
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.gotrue.gotrue
-import io.github.jan.supabase.gotrue.providers.builtin.Email
 import io.github.jan.supabase.gotrue.user.UserInfo
+import io.github.jan.supabase.gotrue.user.UserSession
 
 class AuthRepository(private val supabase: SupabaseClient) {
 
@@ -18,8 +18,13 @@ class AuthRepository(private val supabase: SupabaseClient) {
 
     suspend fun setSession(accessToken: String, refreshToken: String): Result<Unit> = runCatching {
         supabase.gotrue.importSession(
-            accessToken = accessToken,
-            refreshToken = refreshToken,
+            UserSession(
+                accessToken = accessToken,
+                refreshToken = refreshToken,
+                expiresIn = 3600L,
+                tokenType = "bearer",
+                user = null,
+            )
         )
     }
 
