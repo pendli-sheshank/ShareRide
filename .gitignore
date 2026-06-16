@@ -1,18 +1,32 @@
-# Environment variables
+# Environment / secrets
 .env
 .env*.local
 .env.production
-
-# OS
-.DS_Store
-
-# IDE
-.vscode/
-.idea/
-
-# Secrets
+local.properties
 *.pem
 *.key
 *.p12
 *.jks
+*.keystore
 google-services.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.iml
+
+# Gradle
+.gradle/
+build/
+**/build/
+
+# Android
+androidApp/release/
+
+# Node (admin panel)
+node_modules/
+.next/

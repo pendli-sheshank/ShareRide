@@ -8,16 +8,16 @@ SawaariShare — a cost-sharing carpool coordination app for Indian students in 
 
 ## Tech Stack
 
-- **Mobile app:** React Native (Expo), Android-first, iOS second
+- **Mobile app:** Kotlin Multiplatform (KMP), Android-first (Jetpack Compose), iOS planned
 - **Backend:** Supabase (Postgres + PostGIS, Auth, Realtime, Edge Functions, Storage)
 - **Admin panel:** Next.js on Vercel
-- **Build/deploy:** Expo EAS for mobile, Vercel for web, Supabase for backend
+- **Build/deploy:** Gradle (KMP) for mobile, Vercel for web, Supabase for backend
 
 ## Architecture
 
 ### Three execution boundaries
 
-1. **Client (React Native):** UI and optimistic updates. All CRUD goes through Supabase JS client, guarded by Row Level Security. Never enforce business rules client-side only.
+1. **Client (KMP/Android):** UI and optimistic updates. All CRUD via Supabase-kt client, guarded by Row Level Security. Never enforce business rules client-side only.
 2. **Edge Functions (Supabase, trusted):** Cost cap enforcement (2× calculated per-rider cost), invite-code validation, matching queries, recurring trip materialization. These are the trust boundary — anything a user must not bypass lives here.
 3. **Vercel:** Next.js admin panel + Vercel Cron jobs (recurring trip generation, chat purge).
 
@@ -27,48 +27,100 @@ SawaariShare — a cost-sharing carpool coordination app for Indian students in 
 - All `_geo` columns use PostGIS `geography` types with GiST indexes
 - `recurring_rule` stored as RRULE strings; a scheduled job materializes trip instances 7 days ahead
 - RLS policies on every table — plan policies before building features
-- Phone auth managed by Supabase Auth (JWT + OTP)
+- Auth managed by Supabase Auth (JWT + Magic Link email OTP)
 - Chat built on Supabase Realtime, scoped to accepted matches, purged 30 days post-trip
 
 ### User model
 
-Single account with two switchable modes (Rider / Host). Host mode requires vehicle details. Three verification tiers: Phone-only → Vouched (invite) → ID-Verified (manual review).
+Single account with two switchable modes (Rider / Host). Host mode requires vehicle details. Three verification tiers: Email-only → Vouched (invite) → ID-Verified (manual review).
+
+## Module Layout
+
+```
+androidApp/          Android Jetpack Compose application
+  src/main/
+    kotlin/com/shareride/android/
+      di/            Hilt dependency injection
+      navigation/    Compose Navigation graph
+      ui/
+        auth/        Login screen + AuthViewModel
+        trips/       Rides feed + TripsViewModel
+        post/        Post trip screen
+        chat/        Chat list screen
+        profile/     Profile screen
+    res/             Android resources
+
+shared/              KMP shared business logic (no UI)
+  src/
+    commonMain/kotlin/com/shareride/
+      model/         Serializable data classes
+      repository/    AuthRepository, TripRepository
+      SupabaseClientFactory.kt
+
+admin/               Next.js admin panel (Vercel)
+docs/                PRD and documentation
+supabase/            DB migrations + Edge Functions
+```
 
 ## Development
 
+### Prerequisites
+
+- JDK 21 (temurin recommended)
+- Android Studio Ladybug or newer
+- Gradle 8.11.1 (wrapper: run `gradle wrapper --gradle-version 8.11.1` on first clone)
+
+### First-time setup
+
+1. Add Supabase credentials to `local.properties` at the repo root:
+   ```properties
+   SUPABASE_URL=https://oqivckjpjtwishdnjumo.supabase.co
+   SUPABASE_ANON_KEY=<your-anon-key>
+   ```
+2. Open the repo root in Android Studio → Gradle sync
+
+### Common commands
+
 ```bash
-cd app
-npm install              # install dependencies
-npm start                # start Expo dev server
-npm run android          # run on Android emulator/device
-npm run ios              # run on iOS simulator (macOS only)
-npx tsc --noEmit         # type check
-```
+# Build debug APK
+./gradlew :androidApp:assembleDebug
 
-Environment setup: copy `app/.env.example` to `app/.env` and fill in your Supabase project URL and anon key.
+# Build release APK
+./gradlew :androidApp:assembleRelease
 
-### Project structure
+# Install on connected Android device
+./gradlew :androidApp:installDebug
 
-```
-app/
-  src/
-    app/              # expo-router file-based routes
-      auth/           # login, onboarding screens
-      (tabs)/         # main tab screens (rides feed, post, chat, profile)
-    lib/              # supabase client
-    hooks/            # React hooks (useAuth, etc.)
-    types/            # TypeScript types matching Supabase schema
-    constants/        # theme (colors, spacing, fonts)
-    components/       # shared UI components
+# Type check shared module
+./gradlew :shared:compileKotlinAndroid
+
+# Clean
+./gradlew clean
 ```
 
 ## Key Constraints
 
 - Cost contributions are capped at 2× the calculated per-rider cost, enforced server-side
 - No language implying "income" or "earnings" anywhere in UI or code — use "cost recovery" framing
-- Phone number is the only mandatory PII; home locations stored at neighborhood granularity, not exact addresses
+- Email is the only mandatory PII; home locations stored at neighborhood granularity
 - Exact trip locations purged 30 days after trip completion
 - In-app chat opens only after join request accepted; closes 24h after trip completion
+
+## Auth Flow
+
+Email magic link:
+1. User enters email on `LoginScreen`
+2. `AuthViewModel.sendMagicLink()` → `AuthRepository` → Supabase `gotrue.sendMagicLinkTo()`
+3. User taps link in email → Android opens `com.shareride://auth#access_token=...&refresh_token=...`
+4. `MainActivity.onNewIntent()` → `AuthViewModel.handleDeepLink()` → `setSession()`
+5. `isLoggedIn` flips → `AppNavigation` navigates to Trips feed
+
+Supabase redirect URL whitelist must include `com.shareride://auth`.
+
+## Supabase Project
+
+- URL: `https://oqivckjpjtwishdnjumo.supabase.co`
+- Project ID: `oqivckjpjtwishdnjumo`
 
 ## Reference
 
