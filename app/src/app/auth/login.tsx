@@ -9,32 +9,30 @@ import {
   Platform,
   Alert,
 } from "react-native";
-import { useRouter } from "expo-router";
 import { supabase } from "../../lib/supabase";
 import { colors, spacing, fontSizes, borderRadius } from "../../constants/theme";
 
-// Normalizes user input into E.164 format (e.g. "+1 (555) 000-0000" -> "+15550000000")
-// since Supabase's phone auth rejects numbers containing spaces, dashes, or parentheses.
-function toE164(phone: string): string {
-  const digits = phone.trim().replace(/\D/g, "");
-  return phone.trim().startsWith("+") ? `+${digits}` : `+1${digits}`;
+function isValidEmail(email: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
 }
 
 export default function LoginScreen() {
-  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
   const [otpSent, setOtpSent] = useState(false);
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
 
   async function sendOtp() {
-    if (phone.replace(/\D/g, "").length < 10) {
-      Alert.alert("Invalid Number", "Please enter a valid phone number.");
+    if (!isValidEmail(email)) {
+      Alert.alert("Invalid Email", "Please enter a valid email address.");
       return;
     }
 
     setLoading(true);
-    const { error } = await supabase.auth.signInWithOtp({ phone: toE164(phone) });
+    const { error } = await supabase.auth.signInWithOtp({
+      email: email.trim().toLowerCase(),
+      options: { shouldCreateUser: true },
+    });
     setLoading(false);
 
     if (error) {
@@ -47,15 +45,15 @@ export default function LoginScreen() {
 
   async function verifyOtp() {
     if (otp.length !== 6) {
-      Alert.alert("Invalid Code", "Please enter the 6-digit code.");
+      Alert.alert("Invalid Code", "Please enter the 6-digit code from your email.");
       return;
     }
 
     setLoading(true);
     const { error } = await supabase.auth.verifyOtp({
-      phone: toE164(phone),
+      email: email.trim().toLowerCase(),
       token: otp,
-      type: "sms",
+      type: "email",
     });
     setLoading(false);
 
@@ -74,23 +72,42 @@ export default function LoginScreen() {
         <Text style={styles.subtitle}>Share rides, split costs</Text>
 
         <View style={styles.form}>
-          <Text style={styles.label}>Phone Number</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="+1 (555) 000-0000"
-            placeholderTextColor={colors.textLight}
-            value={phone}
-            onChangeText={setPhone}
-            keyboardType="phone-pad"
-            autoComplete="tel"
-            editable={!otpSent}
-          />
-
-          {otpSent && (
+          {!otpSent ? (
             <>
-              <Text style={styles.label}>Verification Code</Text>
+              <Text style={styles.label}>Email Address</Text>
               <TextInput
                 style={styles.input}
+                placeholder="you@university.edu"
+                placeholderTextColor={colors.textLight}
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoComplete="email"
+                autoCorrect={false}
+              />
+              <TouchableOpacity
+                style={[styles.button, loading && styles.buttonDisabled]}
+                onPress={sendOtp}
+                disabled={loading}
+              >
+                <Text style={styles.buttonText}>
+                  {loading ? "Sending..." : "Send Code"}
+                </Text>
+              </TouchableOpacity>
+            </>
+          ) : (
+            <>
+              <View style={styles.sentBanner}>
+                <Text style={styles.sentText}>
+                  We sent a 6-digit code to
+                </Text>
+                <Text style={styles.sentEmail}>{email.trim().toLowerCase()}</Text>
+              </View>
+
+              <Text style={styles.label}>Verification Code</Text>
+              <TextInput
+                style={[styles.input, styles.otpInput]}
                 placeholder="000000"
                 placeholderTextColor={colors.textLight}
                 value={otp}
@@ -99,29 +116,27 @@ export default function LoginScreen() {
                 maxLength={6}
                 autoFocus
               />
+
+              <TouchableOpacity
+                style={[styles.button, loading && styles.buttonDisabled]}
+                onPress={verifyOtp}
+                disabled={loading}
+              >
+                <Text style={styles.buttonText}>
+                  {loading ? "Verifying..." : "Verify Code"}
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.linkButton}
+                onPress={() => {
+                  setOtpSent(false);
+                  setOtp("");
+                }}
+              >
+                <Text style={styles.linkText}>Use a different email</Text>
+              </TouchableOpacity>
             </>
-          )}
-
-          <TouchableOpacity
-            style={[styles.button, loading && styles.buttonDisabled]}
-            onPress={otpSent ? verifyOtp : sendOtp}
-            disabled={loading}
-          >
-            <Text style={styles.buttonText}>
-              {loading ? "Please wait..." : otpSent ? "Verify Code" : "Send Code"}
-            </Text>
-          </TouchableOpacity>
-
-          {otpSent && (
-            <TouchableOpacity
-              style={styles.linkButton}
-              onPress={() => {
-                setOtpSent(false);
-                setOtp("");
-              }}
-            >
-              <Text style={styles.linkText}>Change phone number</Text>
-            </TouchableOpacity>
           )}
         </View>
 
@@ -159,6 +174,23 @@ const styles = StyleSheet.create({
   form: {
     gap: spacing.sm,
   },
+  sentBanner: {
+    backgroundColor: colors.surface,
+    borderRadius: borderRadius.md,
+    padding: spacing.md,
+    alignItems: "center",
+    marginBottom: spacing.sm,
+  },
+  sentText: {
+    fontSize: fontSizes.sm,
+    color: colors.textSecondary,
+  },
+  sentEmail: {
+    fontSize: fontSizes.sm,
+    fontWeight: "600",
+    color: colors.text,
+    marginTop: 2,
+  },
   label: {
     fontSize: fontSizes.sm,
     fontWeight: "600",
@@ -174,6 +206,11 @@ const styles = StyleSheet.create({
     fontSize: fontSizes.md,
     color: colors.text,
     backgroundColor: colors.surface,
+  },
+  otpInput: {
+    letterSpacing: 8,
+    textAlign: "center",
+    fontSize: fontSizes.xl,
   },
   button: {
     backgroundColor: colors.primary,

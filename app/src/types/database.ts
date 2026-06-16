@@ -1,4 +1,4 @@
-export type VerifiedTier = "phone_only" | "vouched" | "id_verified";
+export type VerifiedTier = "email_only" | "vouched" | "id_verified";
 
 export type TripStatus = "active" | "full" | "cancelled" | "completed";
 export type RequestStatus = "open" | "matched" | "cancelled";
@@ -8,7 +8,8 @@ export type Gender = "male" | "female" | "non_binary" | "prefer_not_to_say";
 
 export interface User {
   id: string;
-  phone: string;
+  email: string | null;
+  phone: string | null;
   first_name: string;
   last_initial: string;
   photo_url: string | null;

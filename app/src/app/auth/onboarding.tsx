@@ -32,7 +32,7 @@ export default function OnboardingScreen() {
       id: user?.id,
       first_name: firstName.trim(),
       last_initial: lastInitial.trim().charAt(0).toUpperCase(),
-      verified_tier: inviteCode ? "vouched" : "phone_only",
+      verified_tier: inviteCode ? "vouched" : "email_only",
     });
     setLoading(false);
 
