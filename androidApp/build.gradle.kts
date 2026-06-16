@@ -15,18 +15,31 @@ android {
         applicationId = "com.shareride.android"
         minSdk = 26
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = (System.getenv("VERSION_CODE") ?: "1").toInt()
+        versionName = System.getenv("VERSION_NAME") ?: "1.0.0"
 
-        // Injected via local.properties or CI environment
-        buildConfigField("String", "SUPABASE_URL", "\"${project.findProperty("SUPABASE_URL") ?: ""}\"")
-        buildConfigField("String", "SUPABASE_ANON_KEY", "\"${project.findProperty("SUPABASE_ANON_KEY") ?: ""}\"")
+        buildConfigField("String", "SUPABASE_URL", "\"${System.getenv("SUPABASE_URL") ?: project.findProperty("SUPABASE_URL") ?: ""}\"")
+        buildConfigField("String", "SUPABASE_ANON_KEY", "\"${System.getenv("SUPABASE_ANON_KEY") ?: project.findProperty("SUPABASE_ANON_KEY") ?: ""}\"")
+    }
+
+    signingConfigs {
+        create("release") {
+            val ksFile = System.getenv("ANDROID_KEYSTORE_FILE")
+            if (!ksFile.isNullOrEmpty()) {
+                storeFile = file(ksFile)
+                storePassword = System.getenv("ANDROID_STORE_PASSWORD")
+                keyAlias = System.getenv("ANDROID_KEY_ALIAS")
+                keyPassword = System.getenv("ANDROID_KEY_PASSWORD")
+            }
+        }
     }
 
     buildTypes {
         release {
             isMinifyEnabled = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            val ksFile = System.getenv("ANDROID_KEYSTORE_FILE")
+            signingConfig = if (!ksFile.isNullOrEmpty()) signingConfigs.getByName("release") else null
         }
     }
 
