@@ -1,13 +1,95 @@
-# iOS build is planned for a future milestone.
-# KMP shared module is set up; add iosX64/iosArm64/iosSimulatorArm64 targets
-# to shared/build.gradle.kts and create iosApp/ Xcode project to enable this.
-name: Build iOS (KMP) — placeholder
+name: Build iOS → TestFlight
 
 on:
-  workflow_dispatch: {}   # manual trigger only until iOS target is ready
+  workflow_dispatch: {}
+  push:
+    branches: [main, 'claude/**']
+    paths:
+      - 'iosApp/**'
+      - '.github/workflows/deploy-ios.yml'
 
 jobs:
-  placeholder:
+  build:
     runs-on: macos-latest
     steps:
-      - run: echo "iOS build not yet configured. See shared/build.gradle.kts."
+      - uses: actions/checkout@v4
+
+      # ── Install XcodeGen to create the .xcodeproj from project.yml ──────────
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        working-directory: iosApp
+        run: xcodegen generate
+
+      # ── Resolve SPM packages ─────────────────────────────────────────────────
+      - name: Resolve Swift packages
+        working-directory: iosApp
+        run: xcodebuild -resolvePackageDependencies -project iosApp.xcodeproj -scheme iosApp
+
+      # ── Code signing via App Store Connect API key (automatic signing) ───────
+      - name: Write ASC API key
+        env:
+          ASC_API_KEY_BASE64: ${{ secrets.ASC_API_KEY_BASE64 }}
+          ASC_API_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
+        run: |
+          mkdir -p ~/.private_keys
+          echo "$ASC_API_KEY_BASE64" | base64 --decode \
+            > ~/.private_keys/AuthKey_${ASC_API_KEY_ID}.p8
+
+      # ── Archive ──────────────────────────────────────────────────────────────
+      - name: Archive
+        working-directory: iosApp
+        env:
+          ASC_API_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          xcodebuild archive \
+            -project iosApp.xcodeproj \
+            -scheme iosApp \
+            -configuration Release \
+            -archivePath ../SawaariShare.xcarchive \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath ~/.private_keys/AuthKey_${ASC_API_KEY_ID}.p8 \
+            -authenticationKeyID "$ASC_API_KEY_ID" \
+            -authenticationKeyIssuerID "$ASC_ISSUER_ID" \
+            DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
+            | xcpretty
+
+      # ── Export IPA ───────────────────────────────────────────────────────────
+      - name: Export IPA
+        env:
+          ASC_API_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+        run: |
+          xcodebuild -exportArchive \
+            -archivePath SawaariShare.xcarchive \
+            -exportPath SawaariShare-ipa \
+            -exportOptionsPlist iosApp/ExportOptions.plist \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath ~/.private_keys/AuthKey_${ASC_API_KEY_ID}.p8 \
+            -authenticationKeyID "$ASC_API_KEY_ID" \
+            -authenticationKeyIssuerID "$ASC_ISSUER_ID" \
+            | xcpretty
+
+      # ── Upload to TestFlight ─────────────────────────────────────────────────
+      - name: Upload to TestFlight
+        env:
+          ASC_API_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+        run: |
+          xcrun altool --upload-app \
+            -f SawaariShare-ipa/iosApp.ipa \
+            -t ios \
+            --apiKey "$ASC_API_KEY_ID" \
+            --apiIssuer "$ASC_ISSUER_ID"
+
+      # ── Save IPA as artifact (30 days) ───────────────────────────────────────
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sawaari-share-ios
+          path: SawaariShare-ipa/*.ipa
+          retention-days: 30
