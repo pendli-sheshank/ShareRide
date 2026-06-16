@@ -107,7 +107,7 @@ export default function ProfileScreen() {
         </Text>
         <View style={styles.badgeRow}>
           <VerificationBadge
-            tier={profile?.verified_tier ?? "phone_only"}
+            tier={profile?.verified_tier ?? "email_only"}
             size="md"
           />
         </View>

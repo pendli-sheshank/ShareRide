@@ -19,11 +19,11 @@ const tierConfig: Record<
     shortLabel: string;
   }
 > = {
-  phone_only: {
+  email_only: {
     icon: "shield-outline",
     color: colors.textLight,
-    label: "Phone Verified",
-    shortLabel: "Phone",
+    label: "Email Verified",
+    shortLabel: "Email",
   },
   vouched: {
     icon: "shield-checkmark",
