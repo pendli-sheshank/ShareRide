@@ -1,6 +1,7 @@
 name: Build Android (KMP)
 
 on:
+  workflow_dispatch: {}   # manual trigger from any branch
   push:
     branches: [main]
     paths:
