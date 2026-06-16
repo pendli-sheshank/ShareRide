@@ -9,6 +9,7 @@ import {
   Platform,
   Alert,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { supabase } from "../../lib/supabase";
 import { colors, spacing, fontSizes, borderRadius } from "../../constants/theme";
 
@@ -18,11 +19,10 @@ function isValidEmail(email: string) {
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
-  const [otp, setOtp] = useState("");
-  const [otpSent, setOtpSent] = useState(false);
+  const [linkSent, setLinkSent] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  async function sendOtp() {
+  async function sendMagicLink() {
     if (!isValidEmail(email)) {
       Alert.alert("Invalid Email", "Please enter a valid email address.");
       return;
@@ -31,7 +31,12 @@ export default function LoginScreen() {
     setLoading(true);
     const { error } = await supabase.auth.signInWithOtp({
       email: email.trim().toLowerCase(),
-      options: { shouldCreateUser: true },
+      options: {
+        shouldCreateUser: true,
+        // Supabase will redirect to this URL after verifying the magic link.
+        // The app intercepts com.sawaarishare://auth via useMagicLinkHandler.
+        emailRedirectTo: "com.sawaarishare://auth",
+      },
     });
     setLoading(false);
 
@@ -40,26 +45,36 @@ export default function LoginScreen() {
       return;
     }
 
-    setOtpSent(true);
+    setLinkSent(true);
   }
 
-  async function verifyOtp() {
-    if (otp.length !== 6) {
-      Alert.alert("Invalid Code", "Please enter the 6-digit code from your email.");
-      return;
-    }
-
-    setLoading(true);
-    const { error } = await supabase.auth.verifyOtp({
-      email: email.trim().toLowerCase(),
-      token: otp,
-      type: "email",
-    });
-    setLoading(false);
-
-    if (error) {
-      Alert.alert("Error", error.message);
-    }
+  if (linkSent) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.content}>
+          <View style={styles.iconWrap}>
+            <Ionicons name="mail-outline" size={48} color={colors.primary} />
+          </View>
+          <Text style={styles.title}>Check your inbox</Text>
+          <Text style={styles.subtitle}>
+            We sent a sign-in link to
+          </Text>
+          <Text style={styles.emailHighlight}>{email.trim().toLowerCase()}</Text>
+          <Text style={styles.instructions}>
+            Tap the link in the email — the app will open and sign you in automatically.
+          </Text>
+          <TouchableOpacity
+            style={styles.linkButton}
+            onPress={() => {
+              setLinkSent(false);
+              setEmail("");
+            }}
+          >
+            <Text style={styles.linkText}>Use a different email</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
   }
 
   return (
@@ -68,76 +83,31 @@ export default function LoginScreen() {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <View style={styles.content}>
-        <Text style={styles.title}>SawaariShare</Text>
-        <Text style={styles.subtitle}>Share rides, split costs</Text>
+        <Text style={styles.appTitle}>SawaariShare</Text>
+        <Text style={styles.tagline}>Share rides, split costs</Text>
 
         <View style={styles.form}>
-          {!otpSent ? (
-            <>
-              <Text style={styles.label}>Email Address</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="you@university.edu"
-                placeholderTextColor={colors.textLight}
-                value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoComplete="email"
-                autoCorrect={false}
-              />
-              <TouchableOpacity
-                style={[styles.button, loading && styles.buttonDisabled]}
-                onPress={sendOtp}
-                disabled={loading}
-              >
-                <Text style={styles.buttonText}>
-                  {loading ? "Sending..." : "Send Code"}
-                </Text>
-              </TouchableOpacity>
-            </>
-          ) : (
-            <>
-              <View style={styles.sentBanner}>
-                <Text style={styles.sentText}>
-                  We sent a 6-digit code to
-                </Text>
-                <Text style={styles.sentEmail}>{email.trim().toLowerCase()}</Text>
-              </View>
-
-              <Text style={styles.label}>Verification Code</Text>
-              <TextInput
-                style={[styles.input, styles.otpInput]}
-                placeholder="000000"
-                placeholderTextColor={colors.textLight}
-                value={otp}
-                onChangeText={setOtp}
-                keyboardType="number-pad"
-                maxLength={6}
-                autoFocus
-              />
-
-              <TouchableOpacity
-                style={[styles.button, loading && styles.buttonDisabled]}
-                onPress={verifyOtp}
-                disabled={loading}
-              >
-                <Text style={styles.buttonText}>
-                  {loading ? "Verifying..." : "Verify Code"}
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.linkButton}
-                onPress={() => {
-                  setOtpSent(false);
-                  setOtp("");
-                }}
-              >
-                <Text style={styles.linkText}>Use a different email</Text>
-              </TouchableOpacity>
-            </>
-          )}
+          <Text style={styles.label}>Email Address</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="you@university.edu"
+            placeholderTextColor={colors.textLight}
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            autoComplete="email"
+            autoCorrect={false}
+          />
+          <TouchableOpacity
+            style={[styles.button, loading && styles.buttonDisabled]}
+            onPress={sendMagicLink}
+            disabled={loading}
+          >
+            <Text style={styles.buttonText}>
+              {loading ? "Sending…" : "Send Magic Link"}
+            </Text>
+          </TouchableOpacity>
         </View>
 
         <Text style={styles.disclaimer}>
@@ -158,38 +128,52 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingHorizontal: spacing.lg,
   },
-  title: {
+  iconWrap: {
+    alignItems: "center",
+    marginBottom: spacing.lg,
+  },
+  appTitle: {
     fontSize: fontSizes.title,
     fontWeight: "700",
     color: colors.primary,
     textAlign: "center",
   },
-  subtitle: {
+  tagline: {
     fontSize: fontSizes.lg,
     color: colors.textSecondary,
     textAlign: "center",
     marginTop: spacing.xs,
     marginBottom: spacing.xxl,
   },
-  form: {
-    gap: spacing.sm,
-  },
-  sentBanner: {
-    backgroundColor: colors.surface,
-    borderRadius: borderRadius.md,
-    padding: spacing.md,
-    alignItems: "center",
+  title: {
+    fontSize: fontSizes.xl,
+    fontWeight: "700",
+    color: colors.text,
+    textAlign: "center",
     marginBottom: spacing.sm,
   },
-  sentText: {
-    fontSize: fontSizes.sm,
+  subtitle: {
+    fontSize: fontSizes.md,
     color: colors.textSecondary,
+    textAlign: "center",
   },
-  sentEmail: {
-    fontSize: fontSizes.sm,
+  emailHighlight: {
+    fontSize: fontSizes.md,
     fontWeight: "600",
     color: colors.text,
+    textAlign: "center",
     marginTop: 2,
+    marginBottom: spacing.md,
+  },
+  instructions: {
+    fontSize: fontSizes.sm,
+    color: colors.textSecondary,
+    textAlign: "center",
+    lineHeight: 20,
+    marginBottom: spacing.xl,
+  },
+  form: {
+    gap: spacing.sm,
   },
   label: {
     fontSize: fontSizes.sm,
@@ -206,11 +190,6 @@ const styles = StyleSheet.create({
     fontSize: fontSizes.md,
     color: colors.text,
     backgroundColor: colors.surface,
-  },
-  otpInput: {
-    letterSpacing: 8,
-    textAlign: "center",
-    fontSize: fontSizes.xl,
   },
   button: {
     backgroundColor: colors.primary,

@@ -40,7 +40,7 @@ export function ShareTripButton({ offer, variant = "icon" }: ShareTripButtonProp
       `Vehicle: ${offer.vehicle_make_model} (${offer.vehicle_color}) - ${offer.vehicle_plate_no}`,
       `Est. cost: $${offer.cost_estimate.toFixed(0)}/rider`,
       "",
-      `View trip: sawaarishare://trip/${offer.share_token}`,
+      `View trip: com.sawaarishare://trip/${offer.share_token}`,
     ].join("\n");
 
     try {

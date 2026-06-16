@@ -4,6 +4,7 @@ import { StatusBar } from "expo-status-bar";
 import { ActivityIndicator, Text, View } from "react-native";
 import { enableScreens } from "react-native-screens";
 import { useAuth } from "../hooks/useAuth";
+import { useMagicLinkHandler } from "../hooks/useMagicLinkHandler";
 import { ErrorBoundary } from "../components/ErrorBoundary";
 import { colors, spacing } from "../constants/theme";
 import { isSupabaseConfigured, supabaseUrlValid, supabaseKeyValid } from "../lib/supabase";
@@ -29,6 +30,7 @@ export default function RootLayout() {
   const { session, loading } = useAuth();
   const segments = useSegments();
   const router = useRouter();
+  useMagicLinkHandler(); // intercepts com.sawaarishare://auth deep links
 
   useEffect(() => {
     if (loading) return;
