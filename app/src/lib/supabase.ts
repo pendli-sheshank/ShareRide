@@ -12,7 +12,9 @@ const ExpoSecureStoreAdapter = {
 const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL ?? "";
 const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? "";
 
-export const isSupabaseConfigured = /^https?:\/\//i.test(supabaseUrl) && supabaseAnonKey.length > 0;
+export const supabaseUrlValid = /^https?:\/\//i.test(supabaseUrl);
+export const supabaseKeyValid = supabaseAnonKey.length > 20;
+export const isSupabaseConfigured = supabaseUrlValid && supabaseKeyValid;
 
 // Falls back to a placeholder so createClient() never throws at module-load time -
 // an uncaught throw here crashes the app on launch before any UI can render.

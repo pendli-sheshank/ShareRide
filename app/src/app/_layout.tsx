@@ -6,7 +6,7 @@ import { enableScreens } from "react-native-screens";
 import { useAuth } from "../hooks/useAuth";
 import { ErrorBoundary } from "../components/ErrorBoundary";
 import { colors, spacing } from "../constants/theme";
-import { isSupabaseConfigured } from "../lib/supabase";
+import { isSupabaseConfigured, supabaseUrlValid, supabaseKeyValid } from "../lib/supabase";
 
 // react-native-screens' native UIViewController-backed screens crash on launch
 // on iOS 26 (NSException in RNS*Controller native code, surfaced via the
@@ -48,8 +48,14 @@ export default function RootLayout() {
         <Text style={{ fontSize: 16, fontWeight: "600", color: colors.error, textAlign: "center", marginBottom: spacing.sm }}>
           Configuration error
         </Text>
+        <Text style={{ fontSize: 14, color: colors.textSecondary, textAlign: "center", marginBottom: spacing.xs }}>
+          {"SUPABASE_URL: " + (supabaseUrlValid ? "✓ OK" : "✗ missing or not https://")}
+        </Text>
         <Text style={{ fontSize: 14, color: colors.textSecondary, textAlign: "center" }}>
-          EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY are missing or invalid in this build.
+          {"SUPABASE_ANON_KEY: " + (supabaseKeyValid ? "✓ OK" : "✗ missing")}
+        </Text>
+        <Text style={{ fontSize: 12, color: colors.textLight, textAlign: "center", marginTop: spacing.md }}>
+          Set these in EAS Dashboard → Environment Variables → production
         </Text>
       </View>
     );
