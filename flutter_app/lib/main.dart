@@ -29,10 +29,18 @@ void main() async {
   );
 
   // Initialize Feature Flags (Phase 5: Flutter rollout)
-  await FeatureFlagsService().initialize();
+  try {
+    await FeatureFlagsService().initialize();
+  } catch (e) {
+    print('Warning: Feature flags initialization failed: $e');
+  }
 
   // Initialize Monitoring (crash reporting + performance)
-  await MonitoringService().initialize();
+  try {
+    await MonitoringService().initialize();
+  } catch (e) {
+    print('Warning: Monitoring initialization failed: $e');
+  }
 
   // Initialize Sentry for crash reporting
   await SentryFlutter.init(

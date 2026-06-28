@@ -1,9 +1,7 @@
-import 'package:firebase_performance/firebase_performance.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
 class MonitoringService {
   static final MonitoringService _instance = MonitoringService._internal();
-  late FirebasePerformance _performance;
 
   MonitoringService._internal();
 
@@ -12,35 +10,34 @@ class MonitoringService {
   }
 
   Future<void> initialize() async {
-    _performance = FirebasePerformance.instance;
-    // Enable collection by default
-    await _performance.setPerformanceCollectionEnabled(true);
+    // Performance monitoring is automatically enabled by Firebase
+    // Sentry is initialized in main.dart with SentryFlutter.init
   }
 
-  /// Track custom trace (e.g., API call duration)
+  /// Track custom operation duration via breadcrumb
   Future<void> trackTrace(
     String name,
     Future<void> Function() operation, {
     Map<String, String>? attributes,
   }) async {
-    final trace = _performance.newTrace(name);
-    await trace.start();
+    final stopwatch = Stopwatch()..start();
 
     try {
-      // Add attributes if provided
-      if (attributes != null) {
-        for (final entry in attributes.entries) {
-          trace.putAttribute(entry.key, entry.value);
-        }
-      }
-
       await operation();
-      trace.incrementMetric('success', 1);
+      stopwatch.stop();
+      logBreadcrumb(
+        '$name completed in ${stopwatch.elapsedMilliseconds}ms',
+        category: 'trace',
+        level: 'info',
+      );
     } catch (e) {
-      trace.incrementMetric('failure', 1);
+      stopwatch.stop();
+      logBreadcrumb(
+        '$name failed after ${stopwatch.elapsedMilliseconds}ms',
+        category: 'trace',
+        level: 'error',
+      );
       rethrow;
-    } finally {
-      await trace.stop();
     }
   }
 
@@ -56,18 +53,25 @@ class MonitoringService {
     String queryName,
     Future<T> Function() query,
   ) async {
-    final trace = _performance.newTrace('query_$queryName');
-    await trace.start();
+    final stopwatch = Stopwatch()..start();
 
     try {
       final result = await query();
-      trace.incrementMetric('success', 1);
+      stopwatch.stop();
+      logBreadcrumb(
+        'query_$queryName completed in ${stopwatch.elapsedMilliseconds}ms',
+        category: 'query',
+        level: 'info',
+      );
       return result;
     } catch (e) {
-      trace.incrementMetric('failure', 1);
+      stopwatch.stop();
+      logBreadcrumb(
+        'query_$queryName failed after ${stopwatch.elapsedMilliseconds}ms',
+        category: 'query',
+        level: 'error',
+      );
       rethrow;
-    } finally {
-      await trace.stop();
     }
   }
 
