@@ -50,74 +50,64 @@ class AppTypography {
     fontSize: 32,
     fontWeight: FontWeight.bold,
     height: 1.2,
-    fontFamily: 'Poppins',
-  );
+      );
 
   static const displayMedium = TextStyle(
     fontSize: 28,
     fontWeight: FontWeight.bold,
     height: 1.2,
-    fontFamily: 'Poppins',
-  );
+      );
 
   // Heading
   static const headingLarge = TextStyle(
     fontSize: 24,
     fontWeight: FontWeight.w700,
     height: 1.3,
-    fontFamily: 'Poppins',
-  );
+      );
 
   static const headingMedium = TextStyle(
     fontSize: 20,
     fontWeight: FontWeight.w700,
     height: 1.3,
-    fontFamily: 'Poppins',
-  );
+      );
 
   static const headingSmall = TextStyle(
     fontSize: 16,
     fontWeight: FontWeight.w700,
     height: 1.4,
-    fontFamily: 'Poppins',
-  );
+      );
 
   // Body
   static const bodyLarge = TextStyle(
     fontSize: 16,
     fontWeight: FontWeight.w500,
     height: 1.5,
-    fontFamily: 'Poppins',
-  );
+      );
 
   static const bodyMedium = TextStyle(
     fontSize: 14,
     fontWeight: FontWeight.w500,
     height: 1.5,
-    fontFamily: 'Poppins',
-  );
+      );
 
   static const bodySmall = TextStyle(
     fontSize: 12,
     fontWeight: FontWeight.w500,
     height: 1.5,
-    fontFamily: 'Poppins',
-  );
+      );
 
   // Label
   static const labelLarge = TextStyle(
     fontSize: 14,
     fontWeight: FontWeight.w600,
     height: 1.4,
-    fontFamily: 'Poppins',
-  );
+      );
 
   static const labelMedium = TextStyle(
     fontSize: 12,
     fontWeight: FontWeight.w600,
     height: 1.4,
-    fontFamily: 'Poppins',
-  );
+      );
 }
 
 // Material Theme
