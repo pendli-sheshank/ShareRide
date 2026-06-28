@@ -53,7 +53,9 @@ class SignInNotifier extends StateNotifier<AsyncValue<void>> {
   }) async {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(
-      () => authService.signInWithPassword(email: email, password: password).then((_) {}),
+      () => authService
+          .signInWithPassword(email: email, password: password)
+          .then((_) {}),
     );
   }
 }
