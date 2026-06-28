@@ -5,29 +5,33 @@ class AuthService {
 
   AuthService(this.client);
 
-  /// Send OTP to email
-  Future<void> signInWithOtp(String email) async {
+  /// Sign up with email and password
+  Future<AuthResponse> signUpWithPassword({
+    required String email,
+    required String password,
+  }) async {
     try {
-      await client.auth.signInWithOtp(
+      return await client.auth.signUpWithPassword(
         email: email,
-        emailRedirectTo: 'io.supabase.shareride://callback',
+        password: password,
       );
     } catch (e) {
-      throw Exception('Failed to send OTP: $e');
+      throw Exception('Failed to sign up: $e');
     }
   }
 
-  /// Verify OTP code
-  /// In Supabase v1.10.x, email OTP verification happens through deep links
-  /// This method validates the current session after OTP is verified
-  Future<AuthResponse> verifyOtp({
+  /// Sign in with email and password
+  Future<AuthResponse> signInWithPassword({
     required String email,
-    required String token,
+    required String password,
   }) async {
     try {
-      return await client.auth.refreshSession();
+      return await client.auth.signInWithPassword(
+        email: email,
+        password: password,
+      );
     } catch (e) {
-      throw Exception('Failed to verify OTP: $e');
+      throw Exception('Failed to sign in: $e');
     }
   }
 

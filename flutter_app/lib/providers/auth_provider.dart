@@ -41,43 +41,48 @@ final userProfileProvider = FutureProvider<Map<String, dynamic>?>((ref) async {
   return supabaseService.getCurrentUserProfile();
 });
 
-// OTP login notifier
-class OtpLoginNotifier extends StateNotifier<AsyncValue<void>> {
+// Sign in notifier
+class SignInNotifier extends StateNotifier<AsyncValue<void>> {
   final AuthService authService;
 
-  OtpLoginNotifier(this.authService) : super(const AsyncValue.data(null));
+  SignInNotifier(this.authService) : super(const AsyncValue.data(null));
 
-  Future<void> sendOtp(String email) async {
-    state = const AsyncValue.loading();
-    state = await AsyncValue.guard(() => authService.signInWithOtp(email));
-  }
-}
-
-final otpLoginProvider = StateNotifierProvider.autoDispose<OtpLoginNotifier, AsyncValue<void>>((ref) {
-  final authService = ref.watch(authServiceProvider);
-  return OtpLoginNotifier(authService);
-});
-
-// OTP verification notifier
-class OtpVerificationNotifier extends StateNotifier<AsyncValue<void>> {
-  final AuthService authService;
-
-  OtpVerificationNotifier(this.authService) : super(const AsyncValue.data(null));
-
-  Future<void> verifyOtp({
+  Future<void> signIn({
     required String email,
-    required String token,
+    required String password,
   }) async {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(
-      () => authService.verifyOtp(email: email, token: token).then((_) {}),
+      () => authService.signInWithPassword(email: email, password: password).then((_) {}),
     );
   }
 }
 
-final otpVerificationProvider = StateNotifierProvider.autoDispose<OtpVerificationNotifier, AsyncValue<void>>((ref) {
+final signInProvider = StateNotifierProvider.autoDispose<SignInNotifier, AsyncValue<void>>((ref) {
   final authService = ref.watch(authServiceProvider);
-  return OtpVerificationNotifier(authService);
+  return SignInNotifier(authService);
+});
+
+// Sign up notifier
+class SignUpNotifier extends StateNotifier<AsyncValue<void>> {
+  final AuthService authService;
+
+  SignUpNotifier(this.authService) : super(const AsyncValue.data(null));
+
+  Future<void> signUp({
+    required String email,
+    required String password,
+  }) async {
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(
+      () => authService.signUpWithPassword(email: email, password: password).then((_) {}),
+    );
+  }
+}
+
+final signUpProvider = StateNotifierProvider.autoDispose<SignUpNotifier, AsyncValue<void>>((ref) {
+  final authService = ref.watch(authServiceProvider);
+  return SignUpNotifier(authService);
 });
 
 // Logout notifier

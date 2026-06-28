@@ -13,15 +13,19 @@ class LoginScreen extends ConsumerStatefulWidget {
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
   final emailController = TextEditingController();
+  final passwordController = TextEditingController();
   String? emailError;
+  String? passwordError;
+  bool obscurePassword = true;
 
   @override
   void dispose() {
     emailController.dispose();
+    passwordController.dispose();
     super.dispose();
   }
 
-  void _validateEmail() {
+  void _validateForm() {
     setState(() {
       final email = emailController.text.trim();
       if (email.isEmpty) {
@@ -31,27 +35,34 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       } else {
         emailError = null;
       }
+
+      final password = passwordController.text;
+      if (password.isEmpty) {
+        passwordError = 'Password is required';
+      } else if (password.length < 6) {
+        passwordError = 'Password must be at least 6 characters';
+      } else {
+        passwordError = null;
+      }
     });
   }
 
-  void _sendOtp() async {
-    _validateEmail();
-    if (emailError != null) return;
+  void _signIn() async {
+    _validateForm();
+    if (emailError != null || passwordError != null) return;
 
     final email = emailController.text.trim();
+    final password = passwordController.text;
 
-    // Send OTP
-    ref.read(otpLoginProvider.notifier).sendOtp(email);
-
-    // Navigate to verification screen
-    if (mounted) {
-      context.push('/auth/verify', extra: email);
-    }
+    ref.read(signInProvider.notifier).signIn(
+          email: email,
+          password: password,
+        );
   }
 
   @override
   Widget build(BuildContext context) {
-    final otpState = ref.watch(otpLoginProvider);
+    final signInState = ref.watch(signInProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -90,14 +101,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
               // Heading
               Text(
-                'Sign in with your email',
+                'Sign in to your account',
                 style: AppTypography.headingLarge.copyWith(
                   color: AppColors.textPrimary,
                 ),
               ),
               const SizedBox(height: AppSpacing.sm),
               Text(
-                'We\'ll send you a one-time code to verify your email',
+                'Enter your email and password to continue',
                 style: AppTypography.bodyMedium.copyWith(
                   color: AppColors.textSecondary,
                 ),
@@ -110,7 +121,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 keyboardType: TextInputType.emailAddress,
                 onChanged: (_) {
                   if (emailError != null) {
-                    _validateEmail();
+                    _validateForm();
                   }
                 },
                 decoration: InputDecoration(
@@ -121,12 +132,39 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ),
               const SizedBox(height: AppSpacing.lg),
 
-              // Send OTP button
+              // Password input
+              TextField(
+                controller: passwordController,
+                obscureText: obscurePassword,
+                onChanged: (_) {
+                  if (passwordError != null) {
+                    _validateForm();
+                  }
+                },
+                decoration: InputDecoration(
+                  hintText: 'Enter your password',
+                  errorText: passwordError,
+                  label: const Text('Password'),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      obscurePassword ? Icons.visibility_off : Icons.visibility,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        obscurePassword = !obscurePassword;
+                      });
+                    },
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.lg),
+
+              // Sign in button
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: otpState.isLoading ? null : _sendOtp,
-                  child: otpState.isLoading
+                  onPressed: signInState.isLoading ? null : _signIn,
+                  child: signInState.isLoading
                       ? const SizedBox(
                           height: 20,
                           width: 20,
@@ -137,12 +175,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             ),
                           ),
                         )
-                      : const Text('Send Code'),
+                      : const Text('Sign In'),
                 ),
               ),
 
               // Error message
-              if (otpState.hasError)
+              if (signInState.hasError)
                 Padding(
                   padding: const EdgeInsets.only(top: AppSpacing.md),
                   child: Container(
@@ -153,7 +191,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       border: Border.all(color: AppColors.error),
                     ),
                     child: Text(
-                      'Failed to send code. Please try again.',
+                      'Failed to sign in. Please check your credentials.',
                       style: AppTypography.bodySmall.copyWith(
                         color: AppColors.error,
                       ),
