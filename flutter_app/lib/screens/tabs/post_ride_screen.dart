@@ -74,21 +74,21 @@ class _PostRideScreenState extends ConsumerState<PostRideScreen> {
     final destination = destinationController.text.trim();
 
     ref.read(createTripProvider.notifier).createTrip(
-      origin: origin,
-      destination: destination,
-      originLat: 28.6139, // Dummy Delhi coordinates
-      originLng: 77.2090,
-      destLat: 28.7041,
-      destLng: 77.1025,
-      departureTime: departureTime!,
-      costPerSeat: int.parse(costController.text),
-      seatsAvailable: int.parse(seatsController.text),
-      womenOnly: womenOnly,
-    );
+          origin: origin,
+          destination: destination,
+          originLat: 28.6139, // Dummy Delhi coordinates
+          originLng: 77.2090,
+          destLat: 28.7041,
+          destLng: 77.1025,
+          departureTime: departureTime!,
+          costPerSeat: int.parse(costController.text),
+          seatsAvailable: int.parse(seatsController.text),
+          womenOnly: womenOnly,
+        );
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Trip posted successfully!')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Trip posted successfully!')));
 
     // Reset form
     formKey.currentState!.reset();
@@ -103,9 +103,7 @@ class _PostRideScreenState extends ConsumerState<PostRideScreen> {
     final createState = ref.watch(createTripProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Post a Ride'),
-      ),
+      appBar: AppBar(title: const Text('Post a Ride')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(AppSpacing.lg),
         child: Form(
@@ -114,10 +112,7 @@ class _PostRideScreenState extends ConsumerState<PostRideScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Route section
-              Text(
-                'Route',
-                style: AppTypography.headingMedium,
-              ),
+              Text('Route', style: AppTypography.headingMedium),
               const SizedBox(height: AppSpacing.md),
 
               TextFormField(
@@ -153,10 +148,7 @@ class _PostRideScreenState extends ConsumerState<PostRideScreen> {
               const SizedBox(height: AppSpacing.lg),
 
               // Trip details section
-              Text(
-                'Trip Details',
-                style: AppTypography.headingMedium,
-              ),
+              Text('Trip Details', style: AppTypography.headingMedium),
               const SizedBox(height: AppSpacing.md),
 
               ListTile(
@@ -223,10 +215,7 @@ class _PostRideScreenState extends ConsumerState<PostRideScreen> {
               const SizedBox(height: AppSpacing.lg),
 
               // Options section
-              Text(
-                'Options',
-                style: AppTypography.headingMedium,
-              ),
+              Text('Options', style: AppTypography.headingMedium),
               const SizedBox(height: AppSpacing.md),
 
               CheckboxListTile(

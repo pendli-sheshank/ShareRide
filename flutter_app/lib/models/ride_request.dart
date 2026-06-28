@@ -31,7 +31,8 @@ class RideRequest {
     required this.createdAt,
   });
 
-  bool get isActive => status == 'active' && departureTime.isAfter(DateTime.now());
+  bool get isActive =>
+      status == 'active' && departureTime.isAfter(DateTime.now());
 
   factory RideRequest.fromJson(Map<String, dynamic> json) {
     return RideRequest(

@@ -4,18 +4,11 @@ import 'package:flutter_test/flutter_test.dart';
 
 /// Helper to wrap widgets with required providers for testing
 Widget testableWidget(Widget widget) {
-  return MaterialApp(
-    home: ProviderScope(
-      child: widget,
-    ),
-  );
+  return MaterialApp(home: ProviderScope(child: widget));
 }
 
 /// Helper to pump widget and settle animations
-Future<void> pumpWidget(
-  WidgetTester tester,
-  Widget widget,
-) async {
+Future<void> pumpWidget(WidgetTester tester, Widget widget) async {
   await tester.pumpWidget(testableWidget(widget));
   await tester.pumpAndSettle();
 }
@@ -39,10 +32,7 @@ Future<void> waitForFuture(WidgetTester tester) async {
 }
 
 /// Helper to measure widget build time
-Future<Duration> measureBuildTime(
-  WidgetTester tester,
-  Widget widget,
-) async {
+Future<Duration> measureBuildTime(WidgetTester tester, Widget widget) async {
   final stopwatch = Stopwatch()..start();
   await pumpWidget(tester, widget);
   stopwatch.stop();

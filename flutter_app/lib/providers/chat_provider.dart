@@ -9,15 +9,19 @@ final chatServiceProvider = Provider<ChatService>((ref) {
 });
 
 // Chat messages stream (real-time)
-final chatMessagesProvider =
-    StreamProvider.family<List<ChatMessage>, String>((ref, matchId) {
+final chatMessagesProvider = StreamProvider.family<List<ChatMessage>, String>((
+  ref,
+  matchId,
+) {
   final chatService = ref.watch(chatServiceProvider);
   return chatService.streamChatMessages(matchId);
 });
 
 // Chat history (initial load)
-final chatHistoryProvider =
-    FutureProvider.family<List<ChatMessage>, String>((ref, matchId) async {
+final chatHistoryProvider = FutureProvider.family<List<ChatMessage>, String>((
+  ref,
+  matchId,
+) async {
   final chatService = ref.watch(chatServiceProvider);
   return chatService.fetchChatMessages(matchId);
 });
@@ -40,21 +44,27 @@ class SendMessageNotifier extends StateNotifier<AsyncValue<void>> {
 }
 
 final sendMessageProvider =
-    StateNotifierProvider.autoDispose<SendMessageNotifier, AsyncValue<void>>((ref) {
+    StateNotifierProvider.autoDispose<SendMessageNotifier, AsyncValue<void>>((
+  ref,
+) {
   final chatService = ref.watch(chatServiceProvider);
   return SendMessageNotifier(chatService);
 });
 
 // Latest message for a match (for preview in list)
-final latestMessageProvider =
-    FutureProvider.family<ChatMessage?, String>((ref, matchId) async {
+final latestMessageProvider = FutureProvider.family<ChatMessage?, String>((
+  ref,
+  matchId,
+) async {
   final chatService = ref.watch(chatServiceProvider);
   return chatService.getLatestMessage(matchId);
 });
 
 // Unread message count
-final unreadCountProvider =
-    FutureProvider.family<int, String>((ref, matchId) async {
+final unreadCountProvider = FutureProvider.family<int, String>((
+  ref,
+  matchId,
+) async {
   final chatService = ref.watch(chatServiceProvider);
   return chatService.getUnreadMessageCount(matchId);
 });

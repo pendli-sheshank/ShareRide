@@ -92,7 +92,14 @@ final sampleMatches = [
     riderLeaveTime: null,
     hostNoShow: false,
     riderNoShow: false,
-    tripOffer: sampleTripOffers[0],
+    tripOffer: {
+      'id': '1',
+      'origin': 'Delhi',
+      'destination': 'Mumbai',
+      'departure_time': DateTime(2026, 7, 1, 10, 0).toIso8601String(),
+      'cost_per_seat': 500,
+      'seats_available': 4,
+    },
     createdAt: DateTime(2026, 6, 28),
   ),
 ];

@@ -50,7 +50,8 @@ class FeatureFlagsService {
   }
 
   /// Check if Flutter should be used for Browse Rides screen
-  bool usesFlutterBrowseRides() => remoteConfig.getBool('use_flutter_browse_rides');
+  bool usesFlutterBrowseRides() =>
+      remoteConfig.getBool('use_flutter_browse_rides');
 
   /// Check if Flutter should be used for My Rides screen
   bool usesFlutterMyRides() => remoteConfig.getBool('use_flutter_my_rides');
@@ -65,7 +66,8 @@ class FeatureFlagsService {
   bool usesFlutterProfile() => remoteConfig.getBool('use_flutter_profile');
 
   /// Get rollout percentage (0-100)
-  int getFlutterRolloutPercentage() => remoteConfig.getInt('flutter_rollout_percentage');
+  int getFlutterRolloutPercentage() =>
+      remoteConfig.getInt('flutter_rollout_percentage');
 
   /// Check if user is in rollout percentage (based on user ID hash)
   bool isUserInRollout(String userId) {
@@ -82,10 +84,12 @@ class FeatureFlagsService {
   String getMinAppVersion() => remoteConfig.getString('min_app_version');
 
   /// Check if crash reporting is enabled
-  bool isCrashReportingEnabled() => remoteConfig.getBool('enable_crash_reporting');
+  bool isCrashReportingEnabled() =>
+      remoteConfig.getBool('enable_crash_reporting');
 
   /// Check if performance monitoring is enabled
-  bool isPerformanceMonitoringEnabled() => remoteConfig.getBool('enable_performance_monitoring');
+  bool isPerformanceMonitoringEnabled() =>
+      remoteConfig.getBool('enable_performance_monitoring');
 
   /// Refresh remote config
   Future<void> refresh() async {

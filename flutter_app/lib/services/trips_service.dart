@@ -20,9 +20,8 @@ class TripsService {
 
       query = query.eq('status', 'active');
 
-      final response = await query
-          .order('departure_time', ascending: true)
-          .limit(limit);
+      final response =
+          await query.order('departure_time', ascending: true).limit(limit);
 
       return (response as List)
           .map((o) => TripOffer.fromJson(o as Map<String, dynamic>))
@@ -108,8 +107,7 @@ class TripsService {
     try {
       await client
           .from('trip_offers')
-          .update({'status': 'cancelled'})
-          .eq('id', tripOfferId);
+          .update({'status': 'cancelled'}).eq('id', tripOfferId);
     } catch (e) {
       throw Exception('Failed to cancel trip offer: $e');
     }
@@ -174,8 +172,7 @@ class TripsService {
     try {
       await client
           .from('ride_requests')
-          .update({'status': 'cancelled'})
-          .eq('id', rideRequestId);
+          .update({'status': 'cancelled'}).eq('id', rideRequestId);
     } catch (e) {
       throw Exception('Failed to cancel ride request: $e');
     }

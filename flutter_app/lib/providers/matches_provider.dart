@@ -15,7 +15,10 @@ final myMatchesProvider = FutureProvider<List<TripMatch>>((ref) async {
 });
 
 // Single match
-final matchProvider = FutureProvider.family<TripMatch?, String>((ref, matchId) async {
+final matchProvider = FutureProvider.family<TripMatch?, String>((
+  ref,
+  matchId,
+) async {
   final matchesService = ref.watch(matchesServiceProvider);
   return matchesService.fetchMatch(matchId);
 });
@@ -41,7 +44,9 @@ class JoinTripNotifier extends StateNotifier<AsyncValue<String>> {
 }
 
 final joinTripProvider =
-    StateNotifierProvider.autoDispose<JoinTripNotifier, AsyncValue<String>>((ref) {
+    StateNotifierProvider.autoDispose<JoinTripNotifier, AsyncValue<String>>((
+  ref,
+) {
   final matchesService = ref.watch(matchesServiceProvider);
   return JoinTripNotifier(matchesService);
 });
@@ -59,7 +64,9 @@ class CancelMatchNotifier extends StateNotifier<AsyncValue<void>> {
 }
 
 final cancelMatchProvider =
-    StateNotifierProvider.autoDispose<CancelMatchNotifier, AsyncValue<void>>((ref) {
+    StateNotifierProvider.autoDispose<CancelMatchNotifier, AsyncValue<void>>((
+  ref,
+) {
   final matchesService = ref.watch(matchesServiceProvider);
   return CancelMatchNotifier(matchesService);
 });
@@ -77,7 +84,9 @@ class AcceptMatchNotifier extends StateNotifier<AsyncValue<void>> {
 }
 
 final acceptMatchProvider =
-    StateNotifierProvider.autoDispose<AcceptMatchNotifier, AsyncValue<void>>((ref) {
+    StateNotifierProvider.autoDispose<AcceptMatchNotifier, AsyncValue<void>>((
+  ref,
+) {
   final matchesService = ref.watch(matchesServiceProvider);
   return AcceptMatchNotifier(matchesService);
 });
@@ -95,7 +104,9 @@ class RejectMatchNotifier extends StateNotifier<AsyncValue<void>> {
 }
 
 final rejectMatchProvider =
-    StateNotifierProvider.autoDispose<RejectMatchNotifier, AsyncValue<void>>((ref) {
+    StateNotifierProvider.autoDispose<RejectMatchNotifier, AsyncValue<void>>((
+  ref,
+) {
   final matchesService = ref.watch(matchesServiceProvider);
   return RejectMatchNotifier(matchesService);
 });

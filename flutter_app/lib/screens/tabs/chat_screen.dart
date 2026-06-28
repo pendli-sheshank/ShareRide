@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../constants/theme.dart';
 import '../../providers/matches_provider.dart';
+import '../../providers/auth_provider.dart';
 
 class ChatScreen extends ConsumerWidget {
   const ChatScreen({Key? key}) : super(key: key);
@@ -12,9 +13,7 @@ class ChatScreen extends ConsumerWidget {
     final matchesAsync = ref.watch(myMatchesProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Messages'),
-      ),
+      appBar: AppBar(title: const Text('Messages')),
       body: matchesAsync.when(
         data: (matches) {
           // Filter only accepted matches (these have chat)
@@ -25,11 +24,7 @@ class ChatScreen extends ConsumerWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    Icons.chat,
-                    size: 64,
-                    color: AppColors.textTertiary,
-                  ),
+                  Icon(Icons.chat, size: 64, color: AppColors.textTertiary),
                   const SizedBox(height: AppSpacing.md),
                   Text(
                     'No conversations yet',
@@ -56,17 +51,17 @@ class ChatScreen extends ConsumerWidget {
               itemCount: chatMatches.length,
               itemBuilder: (context, index) {
                 final match = chatMatches[index];
-                final trip = match.tripOffer as Map<String, dynamic>?;
-                final otherUser = match.riderId == ref.watch(
-                      currentUserProvider.select(
-                        (u) => u.maybeWhen(
-                          data: (user) => user?.id,
-                          orElse: () => null,
-                        ),
-                      ),
-                    )
-                    ? match.host
-                    : match.rider;
+                final trip = match.tripOffer;
+                final currentUserId = ref.watch(
+                  currentUserProvider.select(
+                    (u) => u.maybeWhen(
+                      data: (user) => user?.id,
+                      orElse: () => null,
+                    ),
+                  ),
+                );
+                final otherUser =
+                    match.riderId == currentUserId ? match.host : match.rider;
 
                 return GestureDetector(
                   onTap: () {
@@ -136,18 +131,12 @@ class ChatScreen extends ConsumerWidget {
             ),
           );
         },
-        loading: () => const Center(
-          child: CircularProgressIndicator(),
-        ),
+        loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, stackTrace) => Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.error_outline,
-                size: 64,
-                color: AppColors.error,
-              ),
+              Icon(Icons.error_outline, size: 64, color: AppColors.error),
               const SizedBox(height: AppSpacing.md),
               Text(
                 'Failed to load messages',

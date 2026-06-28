@@ -51,7 +51,7 @@ class MyRidesScreen extends ConsumerWidget {
                         const SizedBox(height: AppSpacing.lg),
                         ElevatedButton.icon(
                           onPressed: () {
-                            DefaultTabController.of(context)?.animateTo(1);
+                            DefaultTabController.of(context).animateTo(1);
                           },
                           icon: const Icon(Icons.add),
                           label: const Text('Post a Trip'),
@@ -78,12 +78,9 @@ class MyRidesScreen extends ConsumerWidget {
                   ),
                 );
               },
-              loading: () => const Center(
-                child: CircularProgressIndicator(),
-              ),
-              error: (error, stackTrace) => Center(
-                child: Text('Error: $error'),
-              ),
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (error, stackTrace) =>
+                  Center(child: Text('Error: $error')),
             ),
 
             // Joined matches tab
@@ -118,7 +115,7 @@ class MyRidesScreen extends ConsumerWidget {
                     itemCount: matches.length,
                     itemBuilder: (context, index) {
                       final match = matches[index];
-                      final trip = match.tripOffer as Map<String, dynamic>?;
+                      final trip = match.tripOffer;
 
                       return Container(
                         margin: const EdgeInsets.only(bottom: AppSpacing.md),
@@ -141,8 +138,8 @@ class MyRidesScreen extends ConsumerWidget {
                                     children: [
                                       Text(
                                         trip?['origin'] as String? ?? 'Route',
-                                        style: AppTypography.bodyMedium
-                                            .copyWith(
+                                        style:
+                                            AppTypography.bodyMedium.copyWith(
                                           color: AppColors.textSecondary,
                                         ),
                                       ),
@@ -160,8 +157,7 @@ class MyRidesScreen extends ConsumerWidget {
                             ),
                             const SizedBox(height: AppSpacing.md),
                             Row(
-                              mainAxisAlignment:
-                                  MainAxisAlignment.spaceBetween,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
                                   '₹${match.costPerRider.toStringAsFixed(0)}',
@@ -186,12 +182,9 @@ class MyRidesScreen extends ConsumerWidget {
                   ),
                 );
               },
-              loading: () => const Center(
-                child: CircularProgressIndicator(),
-              ),
-              error: (error, stackTrace) => Center(
-                child: Text('Error: $error'),
-              ),
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (error, stackTrace) =>
+                  Center(child: Text('Error: $error')),
             ),
           ],
         ),
@@ -236,9 +229,7 @@ class MyRidesScreen extends ConsumerWidget {
       ),
       child: Text(
         status.toUpperCase(),
-        style: AppTypography.labelMedium.copyWith(
-          color: textColor,
-        ),
+        style: AppTypography.labelMedium.copyWith(color: textColor),
       ),
     );
   }

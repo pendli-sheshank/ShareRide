@@ -21,7 +21,6 @@ const Map<String, dynamic> firebaseRemoteConfigDefaults = {
   // App version management
   'min_app_version': '1.0.0',
   'deprecated_app_version': '999.0.0', // Set to high number to force updates
-
   // Monitoring & crash reporting
   'enable_crash_reporting': true,
   'enable_performance_monitoring': true,

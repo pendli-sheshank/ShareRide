@@ -82,18 +82,12 @@ class BrowseRidesScreen extends ConsumerWidget {
             ),
           );
         },
-        loading: () => const Center(
-          child: CircularProgressIndicator(),
-        ),
+        loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, stackTrace) => Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.error_outline,
-                size: 64,
-                color: AppColors.error,
-              ),
+              Icon(Icons.error_outline, size: 64, color: AppColors.error),
               const SizedBox(height: AppSpacing.md),
               Text(
                 'Failed to load rides',
@@ -122,11 +116,7 @@ class BrowseRidesScreen extends ConsumerWidget {
     );
   }
 
-  void _showJoinDialog(
-    BuildContext context,
-    WidgetRef ref,
-    TripOffer trip,
-  ) {
+  void _showJoinDialog(BuildContext context, WidgetRef ref, TripOffer trip) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -177,9 +167,9 @@ class BrowseRidesScreen extends ConsumerWidget {
 
   void _joinTrip(BuildContext context, WidgetRef ref, TripOffer trip) {
     ref.read(joinTripProvider.notifier).joinTrip(
-      tripOfferId: trip.id,
-      costPerRider: trip.costPerSeat.toDouble(),
-    );
+          tripOfferId: trip.id,
+          costPerRider: trip.costPerSeat.toDouble(),
+        );
 
     Navigator.pop(context);
     ScaffoldMessenger.of(context).showSnackBar(

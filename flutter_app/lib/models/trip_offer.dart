@@ -39,7 +39,8 @@ class TripOffer {
 
   int get seatsRemaining => seatsAvailable - seatsBooked;
   bool get isFull => seatsRemaining <= 0;
-  bool get isActive => status == 'active' && departureTime.isAfter(DateTime.now());
+  bool get isActive =>
+      status == 'active' && departureTime.isAfter(DateTime.now());
 
   factory TripOffer.fromJson(Map<String, dynamic> json) {
     return TripOffer(

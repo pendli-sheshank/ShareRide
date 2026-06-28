@@ -47,7 +47,10 @@ final flutterRolloutPercentageProvider = FutureProvider<int>((ref) async {
 
 /// Check if current user is in Flutter rollout
 /// Pass userId to get deterministic rollout status
-final isUserInFlutterRolloutProvider = FutureProvider.family<bool, String>((ref, userId) async {
+final isUserInFlutterRolloutProvider = FutureProvider.family<bool, String>((
+  ref,
+  userId,
+) async {
   final service = ref.watch(featureFlagsServiceProvider);
   await service.initialize();
   return service.isUserInRollout(userId);
@@ -68,7 +71,9 @@ final isCrashReportingEnabledProvider = FutureProvider<bool>((ref) async {
 });
 
 /// Provides performance monitoring enabled status
-final isPerformanceMonitoringEnabledProvider = FutureProvider<bool>((ref) async {
+final isPerformanceMonitoringEnabledProvider = FutureProvider<bool>((
+  ref,
+) async {
   final service = ref.watch(featureFlagsServiceProvider);
   await service.initialize();
   return service.isPerformanceMonitoringEnabled();

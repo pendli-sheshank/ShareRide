@@ -9,15 +9,19 @@ final ratingsServiceProvider = Provider<RatingsService>((ref) {
 });
 
 // User's ratings
-final userRatingsProvider =
-    FutureProvider.family<List<Rating>, String>((ref, userId) async {
+final userRatingsProvider = FutureProvider.family<List<Rating>, String>((
+  ref,
+  userId,
+) async {
   final ratingsService = ref.watch(ratingsServiceProvider);
   return ratingsService.fetchUserRatings(userId);
 });
 
 // User's average rating
-final userAverageRatingProvider =
-    FutureProvider.family<double?, String>((ref, userId) async {
+final userAverageRatingProvider = FutureProvider.family<double?, String>((
+  ref,
+  userId,
+) async {
   final ratingsService = ref.watch(ratingsServiceProvider);
   return ratingsService.fetchUserAverageRating(userId);
 });
@@ -26,7 +30,8 @@ final userAverageRatingProvider =
 class SubmitRatingNotifier extends StateNotifier<AsyncValue<void>> {
   final RatingsService ratingsService;
 
-  SubmitRatingNotifier(this.ratingsService) : super(const AsyncValue.data(null));
+  SubmitRatingNotifier(this.ratingsService)
+      : super(const AsyncValue.data(null));
 
   Future<void> submitRating({
     required String rateeId,
@@ -47,7 +52,9 @@ class SubmitRatingNotifier extends StateNotifier<AsyncValue<void>> {
 }
 
 final submitRatingProvider =
-    StateNotifierProvider.autoDispose<SubmitRatingNotifier, AsyncValue<void>>((ref) {
+    StateNotifierProvider.autoDispose<SubmitRatingNotifier, AsyncValue<void>>((
+  ref,
+) {
   final ratingsService = ref.watch(ratingsServiceProvider);
   return SubmitRatingNotifier(ratingsService);
 });

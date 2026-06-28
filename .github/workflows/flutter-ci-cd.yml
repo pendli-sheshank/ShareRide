@@ -105,6 +105,21 @@ jobs:
           java-version: '17'
           cache: 'gradle'
 
+      - name: Create local.properties
+        working-directory: ${{ env.WORKING_DIR }}/android
+        run: |
+          echo "Creating local.properties with Flutter SDK path..."
+          echo "FLUTTER_ROOT: $FLUTTER_ROOT"
+          echo "FLUTTER_HOME: $FLUTTER_HOME"
+          flutter --version
+          flutter config --android-sdk
+          FLUTTER_SDK_PATH=$(flutter config --android-sdk | grep -oP '(?<=Android SDK path: ).*' || echo $FLUTTER_ROOT)
+          echo "flutter.sdk=$FLUTTER_SDK_PATH" > local.properties
+          echo "Created local.properties:"
+          cat local.properties
+          echo "Directory contents:"
+          ls -la
+
       - name: Get Flutter dependencies
         working-directory: ${{ env.WORKING_DIR }}
         run: flutter pub get
@@ -136,6 +151,17 @@ jobs:
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true
+
+      - name: Check and generate iOS project files
+        working-directory: ${{ env.WORKING_DIR }}
+        run: |
+          if [ ! -d "ios/Runner.xcodeproj" ]; then
+            echo "⚠️  iOS project files not found. Generating..."
+            flutter create . --platforms=ios --org com.shareride
+            echo "✅ iOS project files generated"
+          else
+            echo "✅ iOS project structure found"
+          fi
 
       - name: Get Flutter dependencies
         working-directory: ${{ env.WORKING_DIR }}

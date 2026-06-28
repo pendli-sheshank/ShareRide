@@ -5,32 +5,18 @@ class AuthService {
 
   AuthService(this.client);
 
-  /// Send OTP to email
-  Future<void> signInWithOtp(String email) async {
-    try {
-      await client.auth.signInWithOtp(
-        email: email,
-        emailRedirectTo: 'io.supabase.shareride://callback',
-      );
-    } catch (e) {
-      throw Exception('Failed to send OTP: $e');
-    }
-  }
-
-  /// Verify OTP code
-  Future<AuthResponse> verifyOtp({
+  /// Sign in with email and password
+  Future<AuthResponse> signInWithPassword({
     required String email,
-    required String token,
+    required String password,
   }) async {
     try {
-      final response = await client.auth.verifyOtp(
+      return await client.auth.signInWithPassword(
         email: email,
-        token: token,
-        type: OtpType.email,
+        password: password,
       );
-      return response;
     } catch (e) {
-      throw Exception('Failed to verify OTP: $e');
+      throw Exception('Failed to sign in: $e');
     }
   }
 
