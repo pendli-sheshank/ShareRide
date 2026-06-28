@@ -57,6 +57,7 @@ class ChatScreen extends ConsumerWidget {
               itemCount: chatMatches.length,
               itemBuilder: (context, index) {
                 final match = chatMatches[index];
+                final trip = match.tripOffer;
                 final currentUserId = ref.watch(
                       currentUserProvider.select(
                         (u) => u.maybeWhen(

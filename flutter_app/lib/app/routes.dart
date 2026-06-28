@@ -5,6 +5,8 @@ import 'auth/login_screen.dart';
 import 'auth/otp_verification_screen.dart';
 import 'widgets/app_shell.dart';
 import 'feature_flag_routes.dart';
+import '../screens/trip/trip_detail_screen.dart';
+import '../screens/chat/chat_detail_screen.dart';
 
 final goRouterProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authStateStreamProvider);

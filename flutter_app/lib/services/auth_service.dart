@@ -23,10 +23,9 @@ class AuthService {
     required String token,
   }) async {
     try {
-      final response = await client.auth.verifyOtp(
+      final response = await client.auth.verifyEmailOtp(
         email: email,
         token: token,
-        type: OtpType.email,
       );
       return response;
     } catch (e) {
