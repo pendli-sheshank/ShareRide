@@ -63,28 +63,6 @@ final signInProvider = StateNotifierProvider.autoDispose<SignInNotifier, AsyncVa
   return SignInNotifier(authService);
 });
 
-// Sign up notifier
-class SignUpNotifier extends StateNotifier<AsyncValue<void>> {
-  final AuthService authService;
-
-  SignUpNotifier(this.authService) : super(const AsyncValue.data(null));
-
-  Future<void> signUp({
-    required String email,
-    required String password,
-  }) async {
-    state = const AsyncValue.loading();
-    state = await AsyncValue.guard(
-      () => authService.signUpWithPassword(email: email, password: password).then((_) {}),
-    );
-  }
-}
-
-final signUpProvider = StateNotifierProvider.autoDispose<SignUpNotifier, AsyncValue<void>>((ref) {
-  final authService = ref.watch(authServiceProvider);
-  return SignUpNotifier(authService);
-});
-
 // Logout notifier
 class LogoutNotifier extends StateNotifier<AsyncValue<void>> {
   final AuthService authService;

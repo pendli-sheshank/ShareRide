@@ -5,21 +5,6 @@ class AuthService {
 
   AuthService(this.client);
 
-  /// Sign up with email and password
-  Future<AuthResponse> signUpWithPassword({
-    required String email,
-    required String password,
-  }) async {
-    try {
-      return await client.auth.signUpWithPassword(
-        email: email,
-        password: password,
-      );
-    } catch (e) {
-      throw Exception('Failed to sign up: $e');
-    }
-  }
-
   /// Sign in with email and password
   Future<AuthResponse> signInWithPassword({
     required String email,
