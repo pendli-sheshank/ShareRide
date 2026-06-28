@@ -59,9 +59,9 @@ class SignInNotifier extends StateNotifier<AsyncValue<void>> {
 
 final signInProvider =
     StateNotifierProvider.autoDispose<SignInNotifier, AsyncValue<void>>((ref) {
-      final authService = ref.watch(authServiceProvider);
-      return SignInNotifier(authService);
-    });
+  final authService = ref.watch(authServiceProvider);
+  return SignInNotifier(authService);
+});
 
 // Logout notifier
 class LogoutNotifier extends StateNotifier<AsyncValue<void>> {
@@ -77,6 +77,6 @@ class LogoutNotifier extends StateNotifier<AsyncValue<void>> {
 
 final logoutProvider =
     StateNotifierProvider.autoDispose<LogoutNotifier, AsyncValue<void>>((ref) {
-      final authService = ref.watch(authServiceProvider);
-      return LogoutNotifier(authService);
-    });
+  final authService = ref.watch(authServiceProvider);
+  return LogoutNotifier(authService);
+});

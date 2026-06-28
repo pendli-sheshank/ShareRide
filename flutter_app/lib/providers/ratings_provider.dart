@@ -31,7 +31,7 @@ class SubmitRatingNotifier extends StateNotifier<AsyncValue<void>> {
   final RatingsService ratingsService;
 
   SubmitRatingNotifier(this.ratingsService)
-    : super(const AsyncValue.data(null));
+      : super(const AsyncValue.data(null));
 
   Future<void> submitRating({
     required String rateeId,
@@ -53,8 +53,8 @@ class SubmitRatingNotifier extends StateNotifier<AsyncValue<void>> {
 
 final submitRatingProvider =
     StateNotifierProvider.autoDispose<SubmitRatingNotifier, AsyncValue<void>>((
-      ref,
-    ) {
-      final ratingsService = ref.watch(ratingsServiceProvider);
-      return SubmitRatingNotifier(ratingsService);
-    });
+  ref,
+) {
+  final ratingsService = ref.watch(ratingsServiceProvider);
+  return SubmitRatingNotifier(ratingsService);
+});

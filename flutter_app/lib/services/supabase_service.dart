@@ -17,11 +17,8 @@ class SupabaseService {
     if (userId == null) return null;
 
     try {
-      final response = await client
-          .from('users')
-          .select()
-          .eq('id', userId)
-          .single();
+      final response =
+          await client.from('users').select().eq('id', userId).single();
       return response;
     } catch (e) {
       throw Exception('Failed to fetch user profile: $e');
@@ -40,9 +37,8 @@ class SupabaseService {
         query = query.eq('status', status);
       }
 
-      final response = await query
-          .order('departure_time', ascending: true)
-          .limit(limit);
+      final response =
+          await query.order('departure_time', ascending: true).limit(limit);
 
       return List<Map<String, dynamic>>.from(response);
     } catch (e) {
@@ -167,10 +163,8 @@ class SupabaseService {
     if (userId == null) throw Exception('User not authenticated');
 
     try {
-      final response = await client
-          .from('vehicles')
-          .select()
-          .eq('owner_id', userId);
+      final response =
+          await client.from('vehicles').select().eq('owner_id', userId);
 
       return List<Map<String, dynamic>>.from(response);
     } catch (e) {
@@ -194,10 +188,8 @@ class SupabaseService {
 
   Future<double?> fetchUserAverageRating(String userId) async {
     try {
-      final response = await client
-          .from('ratings')
-          .select('rating')
-          .eq('ratee_id', userId);
+      final response =
+          await client.from('ratings').select('rating').eq('ratee_id', userId);
 
       if (response.isEmpty) return null;
 

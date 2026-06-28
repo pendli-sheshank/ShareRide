@@ -45,11 +45,11 @@ class JoinTripNotifier extends StateNotifier<AsyncValue<String>> {
 
 final joinTripProvider =
     StateNotifierProvider.autoDispose<JoinTripNotifier, AsyncValue<String>>((
-      ref,
-    ) {
-      final matchesService = ref.watch(matchesServiceProvider);
-      return JoinTripNotifier(matchesService);
-    });
+  ref,
+) {
+  final matchesService = ref.watch(matchesServiceProvider);
+  return JoinTripNotifier(matchesService);
+});
 
 // Cancel match notifier
 class CancelMatchNotifier extends StateNotifier<AsyncValue<void>> {
@@ -65,11 +65,11 @@ class CancelMatchNotifier extends StateNotifier<AsyncValue<void>> {
 
 final cancelMatchProvider =
     StateNotifierProvider.autoDispose<CancelMatchNotifier, AsyncValue<void>>((
-      ref,
-    ) {
-      final matchesService = ref.watch(matchesServiceProvider);
-      return CancelMatchNotifier(matchesService);
-    });
+  ref,
+) {
+  final matchesService = ref.watch(matchesServiceProvider);
+  return CancelMatchNotifier(matchesService);
+});
 
 // Accept match notifier (host action)
 class AcceptMatchNotifier extends StateNotifier<AsyncValue<void>> {
@@ -85,11 +85,11 @@ class AcceptMatchNotifier extends StateNotifier<AsyncValue<void>> {
 
 final acceptMatchProvider =
     StateNotifierProvider.autoDispose<AcceptMatchNotifier, AsyncValue<void>>((
-      ref,
-    ) {
-      final matchesService = ref.watch(matchesServiceProvider);
-      return AcceptMatchNotifier(matchesService);
-    });
+  ref,
+) {
+  final matchesService = ref.watch(matchesServiceProvider);
+  return AcceptMatchNotifier(matchesService);
+});
 
 // Reject match notifier (host action)
 class RejectMatchNotifier extends StateNotifier<AsyncValue<void>> {
@@ -105,8 +105,8 @@ class RejectMatchNotifier extends StateNotifier<AsyncValue<void>> {
 
 final rejectMatchProvider =
     StateNotifierProvider.autoDispose<RejectMatchNotifier, AsyncValue<void>>((
-      ref,
-    ) {
-      final matchesService = ref.watch(matchesServiceProvider);
-      return RejectMatchNotifier(matchesService);
-    });
+  ref,
+) {
+  final matchesService = ref.watch(matchesServiceProvider);
+  return RejectMatchNotifier(matchesService);
+});

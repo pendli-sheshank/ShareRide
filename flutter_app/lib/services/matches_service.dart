@@ -67,8 +67,7 @@ class MatchesService {
     try {
       await client
           .from('trip_matches')
-          .update({'status': 'cancelled'})
-          .eq('id', matchId);
+          .update({'status': 'cancelled'}).eq('id', matchId);
     } catch (e) {
       throw Exception('Failed to cancel match: $e');
     }
@@ -79,8 +78,7 @@ class MatchesService {
     try {
       await client
           .from('trip_matches')
-          .update({'status': 'accepted'})
-          .eq('id', matchId);
+          .update({'status': 'accepted'}).eq('id', matchId);
     } catch (e) {
       throw Exception('Failed to accept match: $e');
     }
@@ -91,8 +89,7 @@ class MatchesService {
     try {
       await client
           .from('trip_matches')
-          .update({'status': 'rejected'})
-          .eq('id', matchId);
+          .update({'status': 'rejected'}).eq('id', matchId);
     } catch (e) {
       throw Exception('Failed to reject match: $e');
     }
@@ -103,8 +100,7 @@ class MatchesService {
     try {
       await client
           .from('trip_matches')
-          .update({'status': 'completed'})
-          .eq('id', matchId);
+          .update({'status': 'completed'}).eq('id', matchId);
     } catch (e) {
       throw Exception('Failed to complete match: $e');
     }

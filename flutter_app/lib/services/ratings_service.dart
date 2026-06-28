@@ -23,10 +23,8 @@ class RatingsService {
 
   Future<double?> fetchUserAverageRating(String userId) async {
     try {
-      final response = await client
-          .from('ratings')
-          .select('rating')
-          .eq('ratee_id', userId);
+      final response =
+          await client.from('ratings').select('rating').eq('ratee_id', userId);
 
       if ((response as List).isEmpty) return null;
 

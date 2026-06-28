@@ -60,9 +60,8 @@ class ChatScreen extends ConsumerWidget {
                     ),
                   ),
                 );
-                final otherUser = match.riderId == currentUserId
-                    ? match.host
-                    : match.rider;
+                final otherUser =
+                    match.riderId == currentUserId ? match.host : match.rider;
 
                 return GestureDetector(
                   onTap: () {

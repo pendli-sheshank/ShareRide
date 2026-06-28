@@ -166,9 +166,7 @@ class BrowseRidesScreen extends ConsumerWidget {
   }
 
   void _joinTrip(BuildContext context, WidgetRef ref, TripOffer trip) {
-    ref
-        .read(joinTripProvider.notifier)
-        .joinTrip(
+    ref.read(joinTripProvider.notifier).joinTrip(
           tripOfferId: trip.id,
           costPerRider: trip.costPerSeat.toDouble(),
         );

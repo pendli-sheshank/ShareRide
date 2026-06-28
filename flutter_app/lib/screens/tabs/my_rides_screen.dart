@@ -138,10 +138,10 @@ class MyRidesScreen extends ConsumerWidget {
                                     children: [
                                       Text(
                                         trip?['origin'] as String? ?? 'Route',
-                                        style: AppTypography.bodyMedium
-                                            .copyWith(
-                                              color: AppColors.textSecondary,
-                                            ),
+                                        style:
+                                            AppTypography.bodyMedium.copyWith(
+                                          color: AppColors.textSecondary,
+                                        ),
                                       ),
                                       const SizedBox(height: AppSpacing.xs),
                                       Text(

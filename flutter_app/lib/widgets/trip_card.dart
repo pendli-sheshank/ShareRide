@@ -8,7 +8,7 @@ class TripCard extends StatelessWidget {
   final VoidCallback? onJoin;
 
   const TripCard({Key? key, required this.trip, this.onTap, this.onJoin})
-    : super(key: key);
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -103,9 +103,8 @@ class TripCard extends StatelessWidget {
                 Text(
                   '${trip.seatsRemaining} seat${trip.seatsRemaining != 1 ? 's' : ''}',
                   style: AppTypography.bodySmall.copyWith(
-                    color: trip.isFull
-                        ? AppColors.error
-                        : AppColors.textSecondary,
+                    color:
+                        trip.isFull ? AppColors.error : AppColors.textSecondary,
                   ),
                 ),
               ],

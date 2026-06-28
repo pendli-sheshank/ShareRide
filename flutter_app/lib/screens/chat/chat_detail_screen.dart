@@ -67,9 +67,8 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
               data: (user) => user?.id,
               orElse: () => null,
             );
-            final otherUser = match.riderId == otherUserId
-                ? match.host
-                : match.rider;
+            final otherUser =
+                match.riderId == otherUserId ? match.host : match.rider;
             return Text(otherUser?['display_name'] as String? ?? 'Chat');
           },
           orElse: () => const Text('Chat'),
@@ -177,9 +176,8 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
             borderRadius: BorderRadius.circular(AppRadius.lg),
           ),
           child: Column(
-            crossAxisAlignment: isOwn
-                ? CrossAxisAlignment.end
-                : CrossAxisAlignment.start,
+            crossAxisAlignment:
+                isOwn ? CrossAxisAlignment.end : CrossAxisAlignment.start,
             children: [
               Text(
                 message.body,

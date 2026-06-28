@@ -106,8 +106,8 @@ class MonitoringService {
       level: level == 'error'
           ? SentryLevel.error
           : level == 'warning'
-          ? SentryLevel.warning
-          : SentryLevel.info,
+              ? SentryLevel.warning
+              : SentryLevel.info,
     );
   }
 

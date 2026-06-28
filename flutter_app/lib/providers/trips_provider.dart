@@ -76,11 +76,11 @@ class CreateTripNotifier extends StateNotifier<AsyncValue<String>> {
 
 final createTripProvider =
     StateNotifierProvider.autoDispose<CreateTripNotifier, AsyncValue<String>>((
-      ref,
-    ) {
-      final tripsService = ref.watch(tripsServiceProvider);
-      return CreateTripNotifier(tripsService);
-    });
+  ref,
+) {
+  final tripsService = ref.watch(tripsServiceProvider);
+  return CreateTripNotifier(tripsService);
+});
 
 // Cancel trip notifier
 class CancelTripNotifier extends StateNotifier<AsyncValue<void>> {
@@ -98,18 +98,18 @@ class CancelTripNotifier extends StateNotifier<AsyncValue<void>> {
 
 final cancelTripProvider =
     StateNotifierProvider.autoDispose<CancelTripNotifier, AsyncValue<void>>((
-      ref,
-    ) {
-      final tripsService = ref.watch(tripsServiceProvider);
-      return CancelTripNotifier(tripsService);
-    });
+  ref,
+) {
+  final tripsService = ref.watch(tripsServiceProvider);
+  return CancelTripNotifier(tripsService);
+});
 
 // Create ride request notifier
 class CreateRideRequestNotifier extends StateNotifier<AsyncValue<String>> {
   final TripsService tripsService;
 
   CreateRideRequestNotifier(this.tripsService)
-    : super(const AsyncValue.data(''));
+      : super(const AsyncValue.data(''));
 
   Future<void> createRequest({
     required String origin,
@@ -139,11 +139,8 @@ class CreateRideRequestNotifier extends StateNotifier<AsyncValue<String>> {
   }
 }
 
-final createRideRequestProvider =
-    StateNotifierProvider.autoDispose<
-      CreateRideRequestNotifier,
-      AsyncValue<String>
-    >((ref) {
-      final tripsService = ref.watch(tripsServiceProvider);
-      return CreateRideRequestNotifier(tripsService);
-    });
+final createRideRequestProvider = StateNotifierProvider.autoDispose<
+    CreateRideRequestNotifier, AsyncValue<String>>((ref) {
+  final tripsService = ref.watch(tripsServiceProvider);
+  return CreateRideRequestNotifier(tripsService);
+});

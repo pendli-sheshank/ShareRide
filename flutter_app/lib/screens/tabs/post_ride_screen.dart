@@ -73,9 +73,7 @@ class _PostRideScreenState extends ConsumerState<PostRideScreen> {
     final origin = originController.text.trim();
     final destination = destinationController.text.trim();
 
-    ref
-        .read(createTripProvider.notifier)
-        .createTrip(
+    ref.read(createTripProvider.notifier).createTrip(
           origin: origin,
           destination: destination,
           originLat: 28.6139, // Dummy Delhi coordinates

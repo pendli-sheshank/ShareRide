@@ -45,11 +45,11 @@ class SendMessageNotifier extends StateNotifier<AsyncValue<void>> {
 
 final sendMessageProvider =
     StateNotifierProvider.autoDispose<SendMessageNotifier, AsyncValue<void>>((
-      ref,
-    ) {
-      final chatService = ref.watch(chatServiceProvider);
-      return SendMessageNotifier(chatService);
-    });
+  ref,
+) {
+  final chatService = ref.watch(chatServiceProvider);
+  return SendMessageNotifier(chatService);
+});
 
 // Latest message for a match (for preview in list)
 final latestMessageProvider = FutureProvider.family<ChatMessage?, String>((
