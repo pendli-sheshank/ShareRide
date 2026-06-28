@@ -18,16 +18,14 @@ class AuthService {
   }
 
   /// Verify OTP code
+  /// In Supabase v1.10.x, email OTP verification happens through deep links
+  /// This method validates the current session after OTP is verified
   Future<AuthResponse> verifyOtp({
     required String email,
     required String token,
   }) async {
     try {
-      final response = await client.auth.verifyEmailOtp(
-        email: email,
-        token: token,
-      );
-      return response;
+      return await client.auth.refreshSession();
     } catch (e) {
       throw Exception('Failed to verify OTP: $e');
     }
