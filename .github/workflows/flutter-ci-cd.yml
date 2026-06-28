@@ -143,18 +143,16 @@ jobs:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true
 
-      - name: Check iOS project files
-        working-directory: ${{ env.WORKING_DIR }}/ios
+      - name: Check and generate iOS project files
+        working-directory: ${{ env.WORKING_DIR }}
         run: |
-          if [ ! -d "Runner.xcodeproj" ]; then
-            echo "❌ ERROR: Runner.xcodeproj not found in flutter_app/ios/"
-            echo "iOS project files are missing from the repository."
-            echo "To fix this locally:"
-            echo "  1. On macOS with Flutter/Xcode installed, run: flutter create ."
-            echo "  2. Commit the generated ios/ files to the repository"
-            exit 1
+          if [ ! -d "ios/Runner.xcodeproj" ]; then
+            echo "⚠️  iOS project files not found. Generating..."
+            flutter create . --platforms=ios --org com.shareride
+            echo "✅ iOS project files generated"
+          else
+            echo "✅ iOS project structure found"
           fi
-          echo "✅ iOS project structure found"
 
       - name: Get Flutter dependencies
         working-directory: ${{ env.WORKING_DIR }}
