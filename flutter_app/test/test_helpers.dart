@@ -38,16 +38,6 @@ Future<void> waitForFuture(WidgetTester tester) async {
   await Future.delayed(const Duration(milliseconds: 100));
 }
 
-/// Helper to verify widget appears
-void expectWidgetFound(Finder finder, String description) {
-  expect(finder, findsWidgets, reason: 'Expected to find $description');
-}
-
-/// Helper to verify widget doesn't appear
-void expectWidgetNotFound(Finder finder, String description) {
-  expect(finder, findsNothing, reason: 'Expected not to find $description');
-}
-
 /// Helper to measure widget build time
 Future<Duration> measureBuildTime(
   WidgetTester tester,
