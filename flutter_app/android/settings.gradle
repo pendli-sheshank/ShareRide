@@ -12,9 +12,14 @@ pluginManagement {
             return properties.getProperty("flutter.sdk")
         }
 
-        Properties properties = new Properties()
-        properties.load(new FileInputStream(new File(rootDir, "local.properties")))
-        return properties.getProperty("flutter.sdk")
+        def localPropertiesFile = new File(rootDir, "local.properties")
+        if (localPropertiesFile.exists()) {
+            Properties properties = new Properties()
+            properties.load(new FileInputStream(localPropertiesFile))
+            return properties.getProperty("flutter.sdk")
+        }
+        
+        return null
     }
 
     def flutterSdkPath = getFlutterSdkPath()
