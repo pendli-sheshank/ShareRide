@@ -6,6 +6,12 @@ import '../providers/auth_provider.dart';
 import 'auth/login_screen.dart';
 import 'auth/otp_verification_screen.dart';
 import 'widgets/app_shell.dart';
+import '../screens/tabs/browse_rides_screen.dart';
+import '../screens/tabs/my_rides_screen.dart';
+import '../screens/tabs/post_ride_screen.dart';
+import '../screens/tabs/chat_screen.dart';
+import '../screens/tabs/profile_screen.dart';
+import '../screens/trip/trip_detail_screen.dart';
 
 final goRouterProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authStateStreamProvider);
@@ -58,37 +64,27 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/',
             name: 'browse',
-            builder: (context, state) => const Placeholder(
-              child: Center(child: Text('Browse Rides Screen')),
-            ),
+            builder: (context, state) => const BrowseRidesScreen(),
           ),
           GoRoute(
             path: '/myrides',
             name: 'myrides',
-            builder: (context, state) => const Placeholder(
-              child: Center(child: Text('My Rides Screen')),
-            ),
+            builder: (context, state) => const MyRidesScreen(),
           ),
           GoRoute(
             path: '/post',
             name: 'post',
-            builder: (context, state) => const Placeholder(
-              child: Center(child: Text('Post Ride Screen')),
-            ),
+            builder: (context, state) => const PostRideScreen(),
           ),
           GoRoute(
             path: '/chat',
             name: 'chat',
-            builder: (context, state) => const Placeholder(
-              child: Center(child: Text('Chat List Screen')),
-            ),
+            builder: (context, state) => const ChatScreen(),
           ),
           GoRoute(
             path: '/profile',
             name: 'profile',
-            builder: (context, state) => const Placeholder(
-              child: Center(child: Text('Profile Screen')),
-            ),
+            builder: (context, state) => const ProfileScreen(),
           ),
         ],
       ),
@@ -98,19 +94,18 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         name: 'trip-detail',
         builder: (context, state) {
           final tripId = state.pathParameters['id'] ?? '';
-          return Placeholder(
-            child: Center(child: Text('Trip Detail: $tripId')),
-          );
+          return TripDetailScreen(tripId: tripId);
         },
       ),
-      // Chat detail route
+      // Chat detail route (placeholder for now)
       GoRoute(
         path: '/chat/:matchId',
         name: 'chat-detail',
         builder: (context, state) {
           final matchId = state.pathParameters['matchId'] ?? '';
-          return Placeholder(
-            child: Center(child: Text('Chat Detail: $matchId')),
+          return Scaffold(
+            appBar: AppBar(title: const Text('Chat')),
+            body: Center(child: Text('Chat Detail: $matchId')),
           );
         },
       ),
