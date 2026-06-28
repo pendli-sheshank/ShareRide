@@ -17,8 +17,13 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: 'stable'
+          flutter-version: '3.22.0'
           architecture: x64
+
+      - name: Verify Flutter
+        run: |
+          flutter --version
+          which flutter
 
       - name: Get dependencies
         working-directory: ./flutter_app
@@ -50,8 +55,13 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: 'stable'
+          flutter-version: '3.22.0'
           architecture: x64
+
+      - name: Verify Flutter
+        run: |
+          flutter --version
+          which flutter
 
       - name: Get dependencies
         working-directory: ./flutter_app
@@ -70,12 +80,34 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: 'stable'
+          flutter-version: '3.22.0'
           architecture: x64
+
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Verify Flutter
+        run: |
+          flutter --version
+          which flutter
 
       - name: Get dependencies
         working-directory: ./flutter_app
         run: flutter pub get
+
+      - name: Check AndroidX migration
+        working-directory: ./flutter_app/android
+        run: |
+          if grep -q "androidx" gradle.properties 2>/dev/null; then
+            echo "✅ AndroidX already enabled"
+          else
+            echo "android.useAndroidX=true" >> gradle.properties
+            echo "android.enableJetifier=true" >> gradle.properties
+            echo "✅ AndroidX migration applied"
+          fi
 
       - name: Build APK
         working-directory: ./flutter_app
@@ -97,8 +129,13 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: 'stable'
+          flutter-version: '3.22.0'
           architecture: x64
+
+      - name: Verify Flutter
+        run: |
+          flutter --version
+          which flutter
 
       - name: Get dependencies
         working-directory: ./flutter_app
