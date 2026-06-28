@@ -16,3 +16,4 @@
 *.p12
 *.jks
 google-services.json
+build.log
