@@ -84,8 +84,8 @@ app.*.map.json
 android/app/debug/
 android/app/profile/
 android/app/release/
-android/gradle.properties
 android/local.properties
+# gradle.properties is committed for CI/CD consistency
 
 # Android native build artifacts
 *.so

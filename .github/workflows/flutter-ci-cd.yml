@@ -105,6 +105,12 @@ jobs:
           java-version: '17'
           cache: 'gradle'
 
+      - name: Create local.properties
+        working-directory: ${{ env.WORKING_DIR }}/android
+        run: |
+          echo "flutter.sdk=$FLUTTER_HOME" > local.properties
+          cat local.properties
+
       - name: Get Flutter dependencies
         working-directory: ${{ env.WORKING_DIR }}
         run: flutter pub get
@@ -136,6 +142,19 @@ jobs:
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true
+
+      - name: Check iOS project files
+        working-directory: ${{ env.WORKING_DIR }}/ios
+        run: |
+          if [ ! -d "Runner.xcodeproj" ]; then
+            echo "❌ ERROR: Runner.xcodeproj not found in flutter_app/ios/"
+            echo "iOS project files are missing from the repository."
+            echo "To fix this locally:"
+            echo "  1. On macOS with Flutter/Xcode installed, run: flutter create ."
+            echo "  2. Commit the generated ios/ files to the repository"
+            exit 1
+          fi
+          echo "✅ iOS project structure found"
 
       - name: Get Flutter dependencies
         working-directory: ${{ env.WORKING_DIR }}
