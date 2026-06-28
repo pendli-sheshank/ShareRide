@@ -12,6 +12,7 @@ import '../screens/tabs/post_ride_screen.dart';
 import '../screens/tabs/chat_screen.dart';
 import '../screens/tabs/profile_screen.dart';
 import '../screens/trip/trip_detail_screen.dart';
+import '../screens/chat/chat_detail_screen.dart';
 
 final goRouterProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authStateStreamProvider);
@@ -97,16 +98,13 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           return TripDetailScreen(tripId: tripId);
         },
       ),
-      // Chat detail route (placeholder for now)
+      // Chat detail route
       GoRoute(
         path: '/chat/:matchId',
         name: 'chat-detail',
         builder: (context, state) {
           final matchId = state.pathParameters['matchId'] ?? '';
-          return Scaffold(
-            appBar: AppBar(title: const Text('Chat')),
-            body: Center(child: Text('Chat Detail: $matchId')),
-          );
+          return ChatDetailScreen(matchId: matchId);
         },
       ),
     ],
