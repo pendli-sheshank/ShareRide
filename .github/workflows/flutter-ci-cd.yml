@@ -2,23 +2,67 @@ name: Flutter CI/CD Pipeline
 
 on:
   push:
-    branches: [main, claude/kmp-vs-react-native-m51ceo]
+    branches: [main, develop]
   pull_request:
-    branches: [main]
+    branches: [main, develop]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  FLUTTER_VERSION: '3.22.0'
+  FLUTTER_CHANNEL: 'stable'
+  WORKING_DIR: './flutter_app'
 
 jobs:
+  # Quick validation before expensive builds
+  validate:
+    name: Code Quality Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - name: Verify Flutter
+        run: |
+          flutter --version
+          which flutter
+
+      - name: Get dependencies
+        working-directory: ${{ env.WORKING_DIR }}
+        run: flutter pub get
+
+      - name: Analyze code
+        working-directory: ${{ env.WORKING_DIR }}
+        run: flutter analyze
+
+      - name: Format check
+        working-directory: ${{ env.WORKING_DIR }}
+        run: dart format --set-exit-if-changed .
+
+      - name: Pub audit
+        working-directory: ${{ env.WORKING_DIR }}
+        run: dart pub audit || true
+
+  # Unit tests only (skip performance tests by default)
   test:
     name: Unit & Widget Tests
     runs-on: ubuntu-latest
-    continue-on-error: true
+    needs: validate
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
+      - uses: subosito/flutter-action@v2
         with:
-          channel: stable
-          architecture: x64
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
 
       - name: Verify Flutter
         run: |
@@ -26,178 +70,143 @@ jobs:
           which flutter
 
       - name: Get dependencies
-        working-directory: ./flutter_app
+        working-directory: ${{ env.WORKING_DIR }}
         run: flutter pub get
 
-      - name: Analyze
-        working-directory: ./flutter_app
-        run: flutter analyze
-
-      - name: Run unit & widget tests
-        working-directory: ./flutter_app
+      - name: Run tests
+        working-directory: ${{ env.WORKING_DIR }}
         run: flutter test --coverage
 
-      - name: Upload coverage to Codecov
-        if: hashFiles('./flutter_app/coverage/lcov.info') != ''
-        uses: codecov/codecov-action@v3
+      - name: Upload coverage
+        uses: codecov/codecov-action@v4
+        if: hashFiles('${{ env.WORKING_DIR }}/coverage/lcov.info') != ''
         with:
-          files: ./flutter_app/coverage/lcov.info
+          files: ${{ env.WORKING_DIR }}/coverage/lcov.info
           flags: flutter
           fail_ci_if_error: false
 
-  performance:
-    name: Performance Benchmarks
-    runs-on: ubuntu-latest
-    continue-on-error: true
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          channel: stable
-          architecture: x64
-
-      - name: Verify Flutter
-        run: |
-          flutter --version
-          which flutter
-
-      - name: Get dependencies
-        working-directory: ./flutter_app
-        run: flutter pub get
-
-      - name: Run performance tests
-        working-directory: ./flutter_app
-        run: flutter test test/performance_test.dart -v
-
+  # Parallel builds for speed
   build-android:
     name: Build Android APK
     runs-on: ubuntu-latest
+    needs: validate
+    timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
+      - uses: subosito/flutter-action@v2
         with:
-          channel: stable
-          architecture: x64
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
 
-      - name: Verify Flutter
-        run: |
-          flutter --version
-          which flutter
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'gradle'
 
-      - name: Get dependencies
-        working-directory: ./flutter_app
+      - name: Get Flutter dependencies
+        working-directory: ${{ env.WORKING_DIR }}
         run: flutter pub get
 
       - name: Build APK
-        working-directory: ./flutter_app
-        run: flutter build apk --release
+        working-directory: ${{ env.WORKING_DIR }}
+        run: |
+          flutter build apk \
+            --release \
+            --target-platform android-arm64 \
+            -v
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: app-release.apk
-          path: flutter_app/build/app/outputs/flutter-apk/app-release.apk
+          path: ${{ env.WORKING_DIR }}/build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 7
 
   build-ios:
     name: Build iOS IPA
     runs-on: macos-latest
-    continue-on-error: true
+    needs: validate
+    timeout-minutes: 45
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
+      - uses: subosito/flutter-action@v2
         with:
-          channel: stable
-          architecture: x64
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
 
-      - name: Verify Flutter
-        run: |
-          flutter --version
-          which flutter
-
-      - name: Get dependencies
-        working-directory: ./flutter_app
+      - name: Get Flutter dependencies
+        working-directory: ${{ env.WORKING_DIR }}
         run: flutter pub get
 
+      - name: Install CocoaPods dependencies
+        working-directory: ${{ env.WORKING_DIR }}/ios
+        run: |
+          pod install --repo-update 2>/dev/null || pod install
+
       - name: Build iOS
-        working-directory: ./flutter_app
-        run: flutter build ios --release --no-codesign
+        working-directory: ${{ env.WORKING_DIR }}
+        run: |
+          flutter build ios \
+            --release \
+            --no-codesign \
+            -v
 
       - name: Create IPA
-        if: success()
         run: |
-          cd flutter_app/build/ios/Release-iphoneos
+          cd ${{ env.WORKING_DIR }}/build/ios/Release-iphoneos
           mkdir -p Payload
-          mv Runner.app Payload/
-          zip -r app-release.ipa Payload
+          cp -r Runner.app Payload/
+          cd Payload
+          zip -r ../app-release.ipa Runner.app >/dev/null 2>&1
+          cd ..
+          ls -lh app-release.ipa
 
       - name: Upload IPA artifact
-        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: app-release.ipa
-          path: flutter_app/build/ios/Release-iphoneos/app-release.ipa
+          path: ${{ env.WORKING_DIR }}/build/ios/Release-iphoneos/app-release.ipa
+          retention-days: 7
 
-  deploy-beta:
-    name: Deploy to Firebase App Distribution
+  # Deploy only from main branch
+  deploy-android:
+    name: Deploy Android to Firebase
     runs-on: ubuntu-latest
-    needs: [build-android]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/claude/kmp-vs-react-native-m51ceo' && needs.build-android.result == 'success'
+    needs: build-android
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - name: Download Android APK
+      - name: Download APK
         uses: actions/download-artifact@v4
         with:
           name: app-release.apk
 
-      - name: Upload to Firebase App Distribution
+      - name: Upload to Firebase
         uses: wzieba/Firebase-Distribution-Github-Action@v1
         with:
           serviceCredentialsFileContent: ${{ secrets.FIREBASE_CREDENTIALS }}
           appId: ${{ secrets.FIREBASE_APP_ID }}
           file: app-release.apk
-          releaseNotes: 'Beta build from CI/CD pipeline'
-          testers: 'beta-testers@example.com'
+          releaseNotes: 'Build ${{ github.run_number }} from ${{ github.ref }}'
+          testers: ${{ secrets.FIREBASE_TESTERS }}
 
-  notify:
-    name: Notify Build Status
+  # Summary job
+  build-complete:
+    name: Build Complete
     runs-on: ubuntu-latest
-    needs: [test, performance, build-android, build-ios]
+    needs: [validate, test, build-android, build-ios]
     if: always()
     steps:
-      - name: Check Build Results
+      - name: Check build status
         run: |
-          if [ "${{ needs.build-android.result }}" = "failure" ]; then
-            echo "❌ Build failed: Android APK build did not complete"
+          if [ "${{ needs.build-android.result }}" = "failure" ] || [ "${{ needs.build-ios.result }}" = "failure" ]; then
+            echo "❌ Build failed"
             exit 1
-          fi
-          echo "✅ Android APK build successful!"
-
-      - name: iOS Build Status
-        if: always()
-        run: |
-          if [ "${{ needs.build-ios.result }}" = "failure" ]; then
-            echo "⚠️  iOS IPA build failed (optional, Android-first project)"
           else
-            echo "✅ iOS IPA build successful!"
-          fi
-
-      - name: Build Successful
-        if: success()
-        run: echo "✅ Primary builds successful! Ready for deployment."
-
-      - name: Test Status
-        if: always()
-        run: |
-          if [ "${{ needs.test.result }}" = "failure" ]; then
-            echo "⚠️  Unit & widget tests have issues (scaffold phase)"
-          fi
-          if [ "${{ needs.performance.result }}" = "failure" ]; then
-            echo "⚠️  Performance tests have issues (scaffold phase)"
+            echo "✅ All builds completed successfully"
           fi
