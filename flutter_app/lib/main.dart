@@ -31,9 +31,23 @@ void main() async {
     (options) {
       options.dsn = dotenv.env['SENTRY_DSN'];
       options.tracesSampleRate = 1.0;
+      options.environment = const bool.fromEnvironment('dart.vm.profile')
+          ? 'debug'
+          : 'release';
     },
     appRunner: () => runApp(const ProviderScope(child: ShareRideApp())),
   );
+}
+
+// Handler for widget binding errors
+class ErrorHandler {
+  static void handleError(FlutterErrorDetails details) {
+    // Log to Sentry
+    Sentry.captureException(
+      details.exception,
+      stackTrace: details.stack,
+    );
+  }
 }
 
 class ShareRideApp extends ConsumerWidget {
