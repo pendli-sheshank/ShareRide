@@ -17,8 +17,13 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: 'stable'
+          channel: stable
           architecture: x64
+
+      - name: Verify Flutter
+        run: |
+          flutter --version
+          which flutter
 
       - name: Get dependencies
         working-directory: ./flutter_app
@@ -50,8 +55,13 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: 'stable'
+          channel: stable
           architecture: x64
+
+      - name: Verify Flutter
+        run: |
+          flutter --version
+          which flutter
 
       - name: Get dependencies
         working-directory: ./flutter_app
@@ -70,8 +80,13 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: 'stable'
+          channel: stable
           architecture: x64
+
+      - name: Verify Flutter
+        run: |
+          flutter --version
+          which flutter
 
       - name: Get dependencies
         working-directory: ./flutter_app
@@ -97,8 +112,13 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: 'stable'
+          channel: stable
           architecture: x64
+
+      - name: Verify Flutter
+        run: |
+          flutter --version
+          which flutter
 
       - name: Get dependencies
         working-directory: ./flutter_app
