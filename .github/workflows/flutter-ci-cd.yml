@@ -10,6 +10,7 @@ jobs:
   test:
     name: Unit & Widget Tests
     runs-on: ubuntu-latest
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v3
 
@@ -28,7 +29,7 @@ jobs:
 
       - name: Run unit & widget tests
         working-directory: ./flutter_app
-        run: flutter test --coverage || true
+        run: flutter test --coverage
 
       - name: Upload coverage to Codecov
         if: hashFiles('./flutter_app/coverage/lcov.info') != ''
@@ -41,6 +42,7 @@ jobs:
   performance:
     name: Performance Benchmarks
     runs-on: ubuntu-latest
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v3
 
@@ -55,7 +57,7 @@ jobs:
 
       - name: Run performance tests
         working-directory: ./flutter_app
-        run: flutter test test/performance_test.dart -v || true
+        run: flutter test test/performance_test.dart -v
 
   build-android:
     name: Build Android APK
