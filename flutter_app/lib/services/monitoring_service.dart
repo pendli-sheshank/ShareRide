@@ -122,7 +122,7 @@ class MonitoringService {
       stackTrace: stackTrace,
       withScope: (scope) {
         if (context != null) {
-          scope.setContext('error_context', {'details': context});
+          scope.setContexts('error_context', {'details': context});
         }
       },
     );

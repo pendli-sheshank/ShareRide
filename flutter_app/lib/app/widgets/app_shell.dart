@@ -28,7 +28,7 @@ class AppShell extends ConsumerWidget {
             label: 'Rides',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.my_trips),
+            icon: Icon(Icons.directions),
             label: 'My Rides',
           ),
           BottomNavigationBarItem(

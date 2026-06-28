@@ -16,7 +16,6 @@ class NotificationsService {
       alert: true,
       announcement: true,
       badge: true,
-      carryForward: true,
       criticalAlert: true,
       provisional: true,
       sound: true,

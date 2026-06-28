@@ -16,17 +16,20 @@ final authStateStreamProvider = StreamProvider<AuthState>((ref) {
 
 // Current user provider
 final currentUserProvider = StreamProvider<User?>((ref) {
-  return ref.watch(authStateStreamProvider).whenData((event) => event.session?.user);
+  final authService = ref.watch(authServiceProvider);
+  return authService.authStateChanges.map((state) => state.session?.user);
 });
 
 // Current session provider
 final currentSessionProvider = StreamProvider<Session?>((ref) {
-  return ref.watch(authStateStreamProvider).whenData((event) => event.session);
+  final authService = ref.watch(authServiceProvider);
+  return authService.authStateChanges.map((state) => state.session);
 });
 
 // User authenticated state
 final isAuthenticatedProvider = StreamProvider<bool>((ref) {
-  return ref.watch(authStateStreamProvider).whenData((event) => event.session != null);
+  final authService = ref.watch(authServiceProvider);
+  return authService.authStateChanges.map((state) => state.session != null);
 });
 
 // User profile provider

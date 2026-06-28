@@ -9,7 +9,7 @@ class SupabaseService {
 
   static SupabaseClient get client => Supabase.instance.client;
 
-  static GotrueClient get auth => client.auth;
+  static GoTrueClient get auth => client.auth;
 
   // User queries
   Future<Map<String, dynamic>?> getCurrentUserProfile() async {

@@ -3,7 +3,13 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 class MockSupabaseClient extends Mock implements SupabaseClient {}
 
-class MockGotrueClient extends Mock implements GotrueClient {}
+class MockGotrueClient extends Mock implements GoTrueClient {
+  @override
+  User? get currentUser => MockUser();
+
+  @override
+  Session? get currentSession => MockSession();
+}
 
 class MockPostgrestQueryBuilder extends Mock implements PostgrestQueryBuilder {}
 
