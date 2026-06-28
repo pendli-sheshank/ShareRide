@@ -2,6 +2,7 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 
 class MonitoringService {
   static final MonitoringService _instance = MonitoringService._internal();
+  bool _initialized = false;
 
   MonitoringService._internal();
 
@@ -9,9 +10,18 @@ class MonitoringService {
     return _instance;
   }
 
+  /// Initialize monitoring service (safe to call multiple times)
   Future<void> initialize() async {
-    // Performance monitoring is automatically enabled by Firebase
-    // Sentry is initialized in main.dart with SentryFlutter.init
+    if (_initialized) return;
+
+    try {
+      // Performance monitoring is automatically enabled by Firebase
+      // Sentry is initialized in main.dart with SentryFlutter.init
+      _initialized = true;
+    } catch (e) {
+      print('Warning: Monitoring initialization failed: $e');
+      _initialized = true;
+    }
   }
 
   /// Track custom operation duration via breadcrumb

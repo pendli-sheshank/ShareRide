@@ -2,7 +2,8 @@ import 'package:firebase_remote_config/firebase_remote_config.dart';
 
 class FeatureFlagsService {
   static final FeatureFlagsService _instance = FeatureFlagsService._internal();
-  late FirebaseRemoteConfig _remoteConfig;
+  FirebaseRemoteConfig? _remoteConfig;
+  bool _initialized = false;
 
   FeatureFlagsService._internal();
 
@@ -10,47 +11,61 @@ class FeatureFlagsService {
     return _instance;
   }
 
+  /// Initialize remote config (can be called multiple times safely)
   Future<void> initialize() async {
-    _remoteConfig = FirebaseRemoteConfig.instance;
+    if (_initialized) return;
 
-    // Set default values (React Native fallback)
-    await _remoteConfig.setDefaults({
-      'use_flutter_browse_rides': false,
-      'use_flutter_my_rides': false,
-      'use_flutter_post_ride': false,
-      'use_flutter_chat': false,
-      'use_flutter_profile': false,
-      'flutter_rollout_percentage': 0,
-      'min_app_version': '1.0.0',
-      'enable_crash_reporting': true,
-      'enable_performance_monitoring': true,
-    });
-
-    // Fetch remote config with 1 hour cache
     try {
-      await _remoteConfig.fetchAndActivate();
+      _remoteConfig = FirebaseRemoteConfig.instance;
+
+      // Set default values (React Native fallback)
+      await _remoteConfig!.setDefaults({
+        'use_flutter_browse_rides': false,
+        'use_flutter_my_rides': false,
+        'use_flutter_post_ride': false,
+        'use_flutter_chat': false,
+        'use_flutter_profile': false,
+        'flutter_rollout_percentage': 0,
+        'min_app_version': '1.0.0',
+        'enable_crash_reporting': true,
+        'enable_performance_monitoring': true,
+      });
+
+      // Fetch remote config with 1 hour cache
+      await _remoteConfig!.fetchAndActivate();
+      _initialized = true;
     } catch (e) {
-      print('Error fetching remote config: $e');
+      print('Warning: Feature flags initialization failed: $e');
+      // Continue with defaults even if initialization fails
+      _initialized = true;
     }
   }
 
+  /// Get remote config instance (initializes lazily if needed)
+  FirebaseRemoteConfig get remoteConfig {
+    if (_remoteConfig == null) {
+      _remoteConfig = FirebaseRemoteConfig.instance;
+    }
+    return _remoteConfig!;
+  }
+
   /// Check if Flutter should be used for Browse Rides screen
-  bool usesFlutterBrowseRides() => _remoteConfig.getBool('use_flutter_browse_rides');
+  bool usesFlutterBrowseRides() => remoteConfig.getBool('use_flutter_browse_rides');
 
   /// Check if Flutter should be used for My Rides screen
-  bool usesFlutterMyRides() => _remoteConfig.getBool('use_flutter_my_rides');
+  bool usesFlutterMyRides() => remoteConfig.getBool('use_flutter_my_rides');
 
   /// Check if Flutter should be used for Post Ride screen
-  bool usesFlutterPostRide() => _remoteConfig.getBool('use_flutter_post_ride');
+  bool usesFlutterPostRide() => remoteConfig.getBool('use_flutter_post_ride');
 
   /// Check if Flutter should be used for Chat screen
-  bool usesFlutterChat() => _remoteConfig.getBool('use_flutter_chat');
+  bool usesFlutterChat() => remoteConfig.getBool('use_flutter_chat');
 
   /// Check if Flutter should be used for Profile screen
-  bool usesFlutterProfile() => _remoteConfig.getBool('use_flutter_profile');
+  bool usesFlutterProfile() => remoteConfig.getBool('use_flutter_profile');
 
   /// Get rollout percentage (0-100)
-  int getFlutterRolloutPercentage() => _remoteConfig.getInt('flutter_rollout_percentage');
+  int getFlutterRolloutPercentage() => remoteConfig.getInt('flutter_rollout_percentage');
 
   /// Check if user is in rollout percentage (based on user ID hash)
   bool isUserInRollout(String userId) {
@@ -64,18 +79,18 @@ class FeatureFlagsService {
   }
 
   /// Get minimum app version required
-  String getMinAppVersion() => _remoteConfig.getString('min_app_version');
+  String getMinAppVersion() => remoteConfig.getString('min_app_version');
 
   /// Check if crash reporting is enabled
-  bool isCrashReportingEnabled() => _remoteConfig.getBool('enable_crash_reporting');
+  bool isCrashReportingEnabled() => remoteConfig.getBool('enable_crash_reporting');
 
   /// Check if performance monitoring is enabled
-  bool isPerformanceMonitoringEnabled() => _remoteConfig.getBool('enable_performance_monitoring');
+  bool isPerformanceMonitoringEnabled() => remoteConfig.getBool('enable_performance_monitoring');
 
   /// Refresh remote config
   Future<void> refresh() async {
     try {
-      await _remoteConfig.fetchAndActivate();
+      await remoteConfig.fetchAndActivate();
     } catch (e) {
       print('Error refreshing remote config: $e');
     }
