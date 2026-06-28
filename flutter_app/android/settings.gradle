@@ -1,13 +1,31 @@
 pluginManagement {
-    def flutterSdkPath = System.getenv("FLUTTER_SDK")
-    if (flutterSdkPath == null) {
-        flutterSdkPath = System.getenv("FLUTTER_ROOT")
-    }
-    if (flutterSdkPath == null) {
-        throw new GradleException("Neither FLUTTER_SDK nor FLUTTER_ROOT environment variable found")
+    def flutterRoot = null
+
+    // Try environment variables first
+    if (System.getenv("FLUTTER_ROOT") != null) {
+        flutterRoot = System.getenv("FLUTTER_ROOT")
+    } else if (System.getenv("FLUTTER_SDK") != null) {
+        flutterRoot = System.getenv("FLUTTER_SDK")
+    } else if (System.getenv("FLUTTER_HOME") != null) {
+        flutterRoot = System.getenv("FLUTTER_HOME")
     }
 
-    includeBuild("$flutterSdkPath/packages/flutter_tools/gradle")
+    // If no environment variable, try to use local.properties
+    if (flutterRoot == null) {
+        def localPropertiesFile = new File(rootDir, "local.properties")
+        if (localPropertiesFile.exists()) {
+            def properties = new Properties()
+            localPropertiesFile.withInputStream { properties.load(it) }
+            flutterRoot = properties.getProperty("flutter.sdk")
+        }
+    }
+
+    // Last resort: use a reasonable default for CI
+    if (flutterRoot == null) {
+        println("WARNING: FLUTTER_ROOT not found. Gradle plugin management may fail.")
+    } else {
+        includeBuild("$flutterRoot/packages/flutter_tools/gradle")
+    }
 
     repositories {
         google()
