@@ -30,9 +30,11 @@ class ChatService {
         .stream(primaryKey: ['id'])
         .eq('match_id', matchId)
         .order('created_at', ascending: true)
-        .map((messages) => (messages as List)
-            .map((m) => ChatMessage.fromJson(m as Map<String, dynamic>))
-            .toList());
+        .map(
+          (messages) => (messages as List)
+              .map((m) => ChatMessage.fromJson(m as Map<String, dynamic>))
+              .toList(),
+        );
   }
 
   // Send a message
@@ -71,9 +73,7 @@ class ChatService {
 
       if ((response as List).isEmpty) return null;
 
-      return ChatMessage.fromJson(
-        response.first as Map<String, dynamic>,
-      );
+      return ChatMessage.fromJson(response.first as Map<String, dynamic>);
     } catch (e) {
       throw Exception('Failed to get latest message: $e');
     }

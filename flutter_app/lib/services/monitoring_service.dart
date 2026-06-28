@@ -52,17 +52,19 @@ class MonitoringService {
   }
 
   /// Track screen load time
-  Future<void> trackScreenLoad(String screenName, Future<void> Function() operation) async {
-    return trackTrace('screen_load_$screenName', operation, attributes: {
-      'screen': screenName,
-    });
+  Future<void> trackScreenLoad(
+    String screenName,
+    Future<void> Function() operation,
+  ) async {
+    return trackTrace(
+      'screen_load_$screenName',
+      operation,
+      attributes: {'screen': screenName},
+    );
   }
 
   /// Track API query duration
-  Future<T> trackQuery<T>(
-    String queryName,
-    Future<T> Function() query,
-  ) async {
+  Future<T> trackQuery<T>(String queryName, Future<T> Function() query) async {
     final stopwatch = Stopwatch()..start();
 
     try {
@@ -90,24 +92,22 @@ class MonitoringService {
     String matchId,
     Future<void> Function() sendOperation,
   ) async {
-    return trackTrace('message_send_$matchId', sendOperation, attributes: {
-      'match_id': matchId,
-    });
+    return trackTrace(
+      'message_send_$matchId',
+      sendOperation,
+      attributes: {'match_id': matchId},
+    );
   }
 
   /// Log breadcrumb for debugging
-  void logBreadcrumb(
-    String message, {
-    String? category,
-    String? level,
-  }) {
+  void logBreadcrumb(String message, {String? category, String? level}) {
     Sentry.captureMessage(
       message,
       level: level == 'error'
           ? SentryLevel.error
           : level == 'warning'
-              ? SentryLevel.warning
-              : SentryLevel.info,
+          ? SentryLevel.warning
+          : SentryLevel.info,
     );
   }
 

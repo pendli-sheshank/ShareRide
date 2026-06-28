@@ -33,8 +33,7 @@ final isAuthenticatedProvider = StreamProvider<bool>((ref) {
 });
 
 // User profile provider
-final userProfileProvider =
-    FutureProvider<Map<String, dynamic>?>((ref) async {
+final userProfileProvider = FutureProvider<Map<String, dynamic>?>((ref) async {
   final user = await ref.watch(currentUserProvider.future);
   if (user == null) return null;
 
@@ -48,10 +47,7 @@ class SignInNotifier extends StateNotifier<AsyncValue<void>> {
 
   SignInNotifier(this.authService) : super(const AsyncValue.data(null));
 
-  Future<void> signIn({
-    required String email,
-    required String password,
-  }) async {
+  Future<void> signIn({required String email, required String password}) async {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(
       () => authService
@@ -63,9 +59,9 @@ class SignInNotifier extends StateNotifier<AsyncValue<void>> {
 
 final signInProvider =
     StateNotifierProvider.autoDispose<SignInNotifier, AsyncValue<void>>((ref) {
-  final authService = ref.watch(authServiceProvider);
-  return SignInNotifier(authService);
-});
+      final authService = ref.watch(authServiceProvider);
+      return SignInNotifier(authService);
+    });
 
 // Logout notifier
 class LogoutNotifier extends StateNotifier<AsyncValue<void>> {
@@ -81,6 +77,6 @@ class LogoutNotifier extends StateNotifier<AsyncValue<void>> {
 
 final logoutProvider =
     StateNotifierProvider.autoDispose<LogoutNotifier, AsyncValue<void>>((ref) {
-  final authService = ref.watch(authServiceProvider);
-  return LogoutNotifier(authService);
-});
+      final authService = ref.watch(authServiceProvider);
+      return LogoutNotifier(authService);
+    });

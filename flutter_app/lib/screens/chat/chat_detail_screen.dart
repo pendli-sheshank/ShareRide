@@ -9,10 +9,7 @@ import '../../providers/matches_provider.dart';
 class ChatDetailScreen extends ConsumerStatefulWidget {
   final String matchId;
 
-  const ChatDetailScreen({
-    Key? key,
-    required this.matchId,
-  }) : super(key: key);
+  const ChatDetailScreen({Key? key, required this.matchId}) : super(key: key);
 
   @override
   ConsumerState<ChatDetailScreen> createState() => _ChatDetailScreenState();
@@ -40,10 +37,9 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
     final message = messageController.text.trim();
     if (message.isEmpty) return;
 
-    ref.read(sendMessageProvider.notifier).sendMessage(
-      matchId: widget.matchId,
-      body: message,
-    );
+    ref
+        .read(sendMessageProvider.notifier)
+        .sendMessage(matchId: widget.matchId, body: message);
 
     messageController.clear();
     // Scroll to bottom
@@ -74,9 +70,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
             final otherUser = match.riderId == otherUserId
                 ? match.host
                 : match.rider;
-            return Text(
-              otherUser?['display_name'] as String? ?? 'Chat',
-            );
+            return Text(otherUser?['display_name'] as String? ?? 'Chat');
           },
           orElse: () => const Text('Chat'),
         ),
@@ -117,12 +111,9 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
                   },
                 );
               },
-              loading: () => const Center(
-                child: CircularProgressIndicator(),
-              ),
-              error: (error, stackTrace) => Center(
-                child: Text('Error loading messages: $error'),
-              ),
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (error, stackTrace) =>
+                  Center(child: Text('Error loading messages: $error')),
             ),
           ),
 
@@ -131,9 +122,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
             padding: const EdgeInsets.all(AppSpacing.md),
             decoration: BoxDecoration(
               color: AppColors.surface,
-              border: Border(
-                top: BorderSide(color: AppColors.border),
-              ),
+              border: Border(top: BorderSide(color: AppColors.border)),
             ),
             child: Row(
               children: [
@@ -188,8 +177,9 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
             borderRadius: BorderRadius.circular(AppRadius.lg),
           ),
           child: Column(
-            crossAxisAlignment:
-                isOwn ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+            crossAxisAlignment: isOwn
+                ? CrossAxisAlignment.end
+                : CrossAxisAlignment.start,
             children: [
               Text(
                 message.body,

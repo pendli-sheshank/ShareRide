@@ -15,7 +15,10 @@ final myMatchesProvider = FutureProvider<List<TripMatch>>((ref) async {
 });
 
 // Single match
-final matchProvider = FutureProvider.family<TripMatch?, String>((ref, matchId) async {
+final matchProvider = FutureProvider.family<TripMatch?, String>((
+  ref,
+  matchId,
+) async {
   final matchesService = ref.watch(matchesServiceProvider);
   return matchesService.fetchMatch(matchId);
 });
@@ -41,10 +44,12 @@ class JoinTripNotifier extends StateNotifier<AsyncValue<String>> {
 }
 
 final joinTripProvider =
-    StateNotifierProvider.autoDispose<JoinTripNotifier, AsyncValue<String>>((ref) {
-  final matchesService = ref.watch(matchesServiceProvider);
-  return JoinTripNotifier(matchesService);
-});
+    StateNotifierProvider.autoDispose<JoinTripNotifier, AsyncValue<String>>((
+      ref,
+    ) {
+      final matchesService = ref.watch(matchesServiceProvider);
+      return JoinTripNotifier(matchesService);
+    });
 
 // Cancel match notifier
 class CancelMatchNotifier extends StateNotifier<AsyncValue<void>> {
@@ -59,10 +64,12 @@ class CancelMatchNotifier extends StateNotifier<AsyncValue<void>> {
 }
 
 final cancelMatchProvider =
-    StateNotifierProvider.autoDispose<CancelMatchNotifier, AsyncValue<void>>((ref) {
-  final matchesService = ref.watch(matchesServiceProvider);
-  return CancelMatchNotifier(matchesService);
-});
+    StateNotifierProvider.autoDispose<CancelMatchNotifier, AsyncValue<void>>((
+      ref,
+    ) {
+      final matchesService = ref.watch(matchesServiceProvider);
+      return CancelMatchNotifier(matchesService);
+    });
 
 // Accept match notifier (host action)
 class AcceptMatchNotifier extends StateNotifier<AsyncValue<void>> {
@@ -77,10 +84,12 @@ class AcceptMatchNotifier extends StateNotifier<AsyncValue<void>> {
 }
 
 final acceptMatchProvider =
-    StateNotifierProvider.autoDispose<AcceptMatchNotifier, AsyncValue<void>>((ref) {
-  final matchesService = ref.watch(matchesServiceProvider);
-  return AcceptMatchNotifier(matchesService);
-});
+    StateNotifierProvider.autoDispose<AcceptMatchNotifier, AsyncValue<void>>((
+      ref,
+    ) {
+      final matchesService = ref.watch(matchesServiceProvider);
+      return AcceptMatchNotifier(matchesService);
+    });
 
 // Reject match notifier (host action)
 class RejectMatchNotifier extends StateNotifier<AsyncValue<void>> {
@@ -95,7 +104,9 @@ class RejectMatchNotifier extends StateNotifier<AsyncValue<void>> {
 }
 
 final rejectMatchProvider =
-    StateNotifierProvider.autoDispose<RejectMatchNotifier, AsyncValue<void>>((ref) {
-  final matchesService = ref.watch(matchesServiceProvider);
-  return RejectMatchNotifier(matchesService);
-});
+    StateNotifierProvider.autoDispose<RejectMatchNotifier, AsyncValue<void>>((
+      ref,
+    ) {
+      final matchesService = ref.watch(matchesServiceProvider);
+      return RejectMatchNotifier(matchesService);
+    });

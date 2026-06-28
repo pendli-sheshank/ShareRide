@@ -8,9 +8,10 @@ class RatingsService {
 
   Future<List<Rating>> fetchUserRatings(String userId) async {
     try {
-      final response = await client.from('ratings').select().or(
-            'rater_id.eq.$userId,ratee_id.eq.$userId',
-          );
+      final response = await client
+          .from('ratings')
+          .select()
+          .or('rater_id.eq.$userId,ratee_id.eq.$userId');
 
       return (response as List)
           .map((r) => Rating.fromJson(r as Map<String, dynamic>))
@@ -22,14 +23,14 @@ class RatingsService {
 
   Future<double?> fetchUserAverageRating(String userId) async {
     try {
-      final response =
-          await client.from('ratings').select('rating').eq('ratee_id', userId);
+      final response = await client
+          .from('ratings')
+          .select('rating')
+          .eq('ratee_id', userId);
 
       if ((response as List).isEmpty) return null;
 
-      final ratings = List<int>.from(
-        response.map((r) => r['rating'] as int),
-      );
+      final ratings = List<int>.from(response.map((r) => r['rating'] as int));
       final average = ratings.reduce((a, b) => a + b) / ratings.length;
       return average;
     } catch (e) {

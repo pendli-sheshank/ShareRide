@@ -201,9 +201,7 @@ class SupabaseService {
 
       if (response.isEmpty) return null;
 
-      final ratings = List<int>.from(
-        response.map((r) => r['rating'] as int),
-      );
+      final ratings = List<int>.from(response.map((r) => r['rating'] as int));
       final average = ratings.reduce((a, b) => a + b) / ratings.length;
       return average;
     } catch (e) {

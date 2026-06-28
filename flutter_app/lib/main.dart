@@ -42,16 +42,13 @@ void main() async {
 
   // Initialize Sentry for crash reporting
   try {
-    await SentryFlutter.init(
-      (options) {
-        options.dsn = dotenv.env['SENTRY_DSN'];
-        options.tracesSampleRate = 1.0;
-        options.environment = const bool.fromEnvironment('dart.vm.profile')
-            ? 'debug'
-            : 'release';
-      },
-      appRunner: () => runApp(const ProviderScope(child: ShareRideApp())),
-    );
+    await SentryFlutter.init((options) {
+      options.dsn = dotenv.env['SENTRY_DSN'];
+      options.tracesSampleRate = 1.0;
+      options.environment = const bool.fromEnvironment('dart.vm.profile')
+          ? 'debug'
+          : 'release';
+    }, appRunner: () => runApp(const ProviderScope(child: ShareRideApp())));
   } catch (e) {
     // Sentry initialization failed - run app without crash reporting
     runApp(const ProviderScope(child: ShareRideApp()));
@@ -62,10 +59,7 @@ void main() async {
 class ErrorHandler {
   static void handleError(FlutterErrorDetails details) {
     // Log to Sentry
-    Sentry.captureException(
-      details.exception,
-      stackTrace: details.stack,
-    );
+    Sentry.captureException(details.exception, stackTrace: details.stack);
   }
 }
 

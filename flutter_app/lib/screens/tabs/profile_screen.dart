@@ -12,10 +12,7 @@ class ProfileScreen extends ConsumerWidget {
     final userAsync = ref.watch(currentUserProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Profile'),
-        elevation: 0,
-      ),
+      appBar: AppBar(title: const Text('Profile'), elevation: 0),
       body: userAsync.when(
         data: (user) {
           if (user == null) {
@@ -39,7 +36,8 @@ class ProfileScreen extends ConsumerWidget {
                       radius: 40,
                       backgroundColor: AppColors.primary,
                       child: Text(
-                        (user.email?.isNotEmpty == true ? user.email![0] : '?').toUpperCase(),
+                        (user.email?.isNotEmpty == true ? user.email![0] : '?')
+                            .toUpperCase(),
                         style: AppTypography.displayMedium.copyWith(
                           color: Colors.white,
                         ),
@@ -76,7 +74,9 @@ class ProfileScreen extends ConsumerWidget {
                 title: 'My Vehicles',
                 onTap: () {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Vehicle management coming soon')),
+                    const SnackBar(
+                      content: Text('Vehicle management coming soon'),
+                    ),
                   );
                 },
               ),
@@ -124,9 +124,7 @@ class ProfileScreen extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stackTrace) => Center(
-          child: Text('Error: $error'),
-        ),
+        error: (error, stackTrace) => Center(child: Text('Error: $error')),
       ),
     );
   }
@@ -169,9 +167,7 @@ class ProfileScreen extends ConsumerWidget {
               Navigator.pop(context);
               context.go('/auth/login');
             },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.error,
-            ),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
             child: const Text('Logout'),
           ),
         ],

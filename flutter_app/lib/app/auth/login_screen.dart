@@ -53,10 +53,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final email = emailController.text.trim();
     final password = passwordController.text;
 
-    ref.read(signInProvider.notifier).signIn(
-          email: email,
-          password: password,
-        );
+    ref.read(signInProvider.notifier).signIn(email: email, password: password);
   }
 
   @override

@@ -60,10 +60,7 @@ class _ReportModalState extends State<ReportModal> {
             const SizedBox(height: AppSpacing.lg),
 
             // Reason dropdown
-            Text(
-              'Reason',
-              style: AppTypography.labelLarge,
-            ),
+            Text('Reason', style: AppTypography.labelLarge),
             const SizedBox(height: AppSpacing.sm),
             DropdownButtonFormField<String>(
               value: selectedReason,
@@ -74,10 +71,8 @@ class _ReportModalState extends State<ReportModal> {
               ),
               items: reasons
                   .map(
-                    (reason) => DropdownMenuItem(
-                      value: reason,
-                      child: Text(reason),
-                    ),
+                    (reason) =>
+                        DropdownMenuItem(value: reason, child: Text(reason)),
                   )
                   .toList(),
               onChanged: (value) => setState(() => selectedReason = value),
@@ -87,10 +82,7 @@ class _ReportModalState extends State<ReportModal> {
             const SizedBox(height: AppSpacing.lg),
 
             // Description
-            Text(
-              'Description',
-              style: AppTypography.labelLarge,
-            ),
+            Text('Description', style: AppTypography.labelLarge),
             const SizedBox(height: AppSpacing.sm),
             TextField(
               controller: descriptionController,

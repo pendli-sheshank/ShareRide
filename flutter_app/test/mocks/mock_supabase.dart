@@ -16,7 +16,8 @@ class MockPostgrestQueryBuilder extends Mock implements PostgrestQueryBuilder {}
 class MockPostgrestTransformBuilder extends Mock
     implements PostgrestTransformBuilder {}
 
-class MockPostgrestFilterBuilder extends Mock implements PostgrestFilterBuilder {}
+class MockPostgrestFilterBuilder extends Mock
+    implements PostgrestFilterBuilder {}
 
 class MockPostgrestList extends Mock implements PostgrestList {}
 

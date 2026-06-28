@@ -78,12 +78,9 @@ class MyRidesScreen extends ConsumerWidget {
                   ),
                 );
               },
-              loading: () => const Center(
-                child: CircularProgressIndicator(),
-              ),
-              error: (error, stackTrace) => Center(
-                child: Text('Error: $error'),
-              ),
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (error, stackTrace) =>
+                  Center(child: Text('Error: $error')),
             ),
 
             // Joined matches tab
@@ -143,8 +140,8 @@ class MyRidesScreen extends ConsumerWidget {
                                         trip?['origin'] as String? ?? 'Route',
                                         style: AppTypography.bodyMedium
                                             .copyWith(
-                                          color: AppColors.textSecondary,
-                                        ),
+                                              color: AppColors.textSecondary,
+                                            ),
                                       ),
                                       const SizedBox(height: AppSpacing.xs),
                                       Text(
@@ -160,8 +157,7 @@ class MyRidesScreen extends ConsumerWidget {
                             ),
                             const SizedBox(height: AppSpacing.md),
                             Row(
-                              mainAxisAlignment:
-                                  MainAxisAlignment.spaceBetween,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
                                   '₹${match.costPerRider.toStringAsFixed(0)}',
@@ -186,12 +182,9 @@ class MyRidesScreen extends ConsumerWidget {
                   ),
                 );
               },
-              loading: () => const Center(
-                child: CircularProgressIndicator(),
-              ),
-              error: (error, stackTrace) => Center(
-                child: Text('Error: $error'),
-              ),
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (error, stackTrace) =>
+                  Center(child: Text('Error: $error')),
             ),
           ],
         ),
@@ -236,9 +229,7 @@ class MyRidesScreen extends ConsumerWidget {
       ),
       child: Text(
         status.toUpperCase(),
-        style: AppTypography.labelMedium.copyWith(
-          color: textColor,
-        ),
+        style: AppTypography.labelMedium.copyWith(color: textColor),
       ),
     );
   }

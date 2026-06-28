@@ -5,11 +5,8 @@ class RatingModal extends StatefulWidget {
   final String rateeName;
   final Function(int rating, String? review) onSubmit;
 
-  const RatingModal({
-    Key? key,
-    required this.rateeName,
-    required this.onSubmit,
-  }) : super(key: key);
+  const RatingModal({Key? key, required this.rateeName, required this.onSubmit})
+    : super(key: key);
 
   @override
   State<RatingModal> createState() => _RatingModalState();

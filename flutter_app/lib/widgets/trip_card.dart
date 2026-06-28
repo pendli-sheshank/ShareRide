@@ -7,12 +7,8 @@ class TripCard extends StatelessWidget {
   final VoidCallback? onTap;
   final VoidCallback? onJoin;
 
-  const TripCard({
-    Key? key,
-    required this.trip,
-    this.onTap,
-    this.onJoin,
-  }) : super(key: key);
+  const TripCard({Key? key, required this.trip, this.onTap, this.onJoin})
+    : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -102,11 +98,7 @@ class TripCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: AppSpacing.lg),
-                Icon(
-                  Icons.person,
-                  size: 16,
-                  color: AppColors.textSecondary,
-                ),
+                Icon(Icons.person, size: 16, color: AppColors.textSecondary),
                 const SizedBox(width: AppSpacing.sm),
                 Text(
                   '${trip.seatsRemaining} seat${trip.seatsRemaining != 1 ? 's' : ''}',
@@ -147,11 +139,7 @@ class TripCard extends StatelessWidget {
                       if (trip.host?['average_rating'] != null)
                         Row(
                           children: [
-                            Icon(
-                              Icons.star,
-                              size: 14,
-                              color: Colors.amber,
-                            ),
+                            Icon(Icons.star, size: 14, color: Colors.amber),
                             const SizedBox(width: AppSpacing.xs),
                             Text(
                               '${trip.host?['average_rating']?.toStringAsFixed(1)}',
@@ -165,10 +153,7 @@ class TripCard extends StatelessWidget {
                   ),
                 ),
                 if (!trip.isFull && onJoin != null)
-                  ElevatedButton(
-                    onPressed: onJoin,
-                    child: const Text('Join'),
-                  ),
+                  ElevatedButton(onPressed: onJoin, child: const Text('Join')),
               ],
             ),
           ],

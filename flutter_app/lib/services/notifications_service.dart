@@ -5,10 +5,7 @@ class NotificationsService {
   final SupabaseClient client;
   final FirebaseMessaging firebaseMessaging;
 
-  NotificationsService({
-    required this.client,
-    required this.firebaseMessaging,
-  });
+  NotificationsService({required this.client, required this.firebaseMessaging});
 
   Future<void> initialize() async {
     // Request permission
@@ -48,10 +45,7 @@ class NotificationsService {
     if (userId == null) return;
 
     try {
-      await client
-          .from('users')
-          .update({'push_token': token})
-          .eq('id', userId);
+      await client.from('users').update({'push_token': token}).eq('id', userId);
     } catch (e) {
       print('Failed to update push token: $e');
     }

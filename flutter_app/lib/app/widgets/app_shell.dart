@@ -5,10 +5,7 @@ import 'package:go_router/go_router.dart';
 class AppShell extends ConsumerWidget {
   final Widget child;
 
-  const AppShell({
-    Key? key,
-    required this.child,
-  }) : super(key: key);
+  const AppShell({Key? key, required this.child}) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -29,18 +26,9 @@ class AppShell extends ConsumerWidget {
             icon: Icon(Icons.directions),
             label: 'My Rides',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.add_circle),
-            label: 'Post',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.chat),
-            label: 'Chat',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.add_circle), label: 'Post'),
+          BottomNavigationBarItem(icon: Icon(Icons.chat), label: 'Chat'),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
       ),
     );

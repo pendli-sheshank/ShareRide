@@ -15,7 +15,8 @@ final goRouterProvider = Provider<GoRouter>((ref) {
     debugLogDiagnostics: true,
     redirect: (context, state) {
       // Handle auth redirection
-      final isLoggingIn = state.matchedLocation == '/auth/login' ||
+      final isLoggingIn =
+          state.matchedLocation == '/auth/login' ||
           state.matchedLocation == '/auth/verify';
 
       return authState.when(

@@ -8,10 +8,7 @@ import '../../providers/matches_provider.dart';
 class TripDetailScreen extends ConsumerWidget {
   final String tripId;
 
-  const TripDetailScreen({
-    Key? key,
-    required this.tripId,
-  }) : super(key: key);
+  const TripDetailScreen({Key? key, required this.tripId}) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -46,17 +43,11 @@ class TripDetailScreen extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'Route',
-                        style: AppTypography.headingSmall,
-                      ),
+                      Text('Route', style: AppTypography.headingSmall),
                       const SizedBox(height: AppSpacing.md),
                       Row(
                         children: [
-                          Icon(
-                            Icons.location_on,
-                            color: AppColors.primary,
-                          ),
+                          Icon(Icons.location_on, color: AppColors.primary),
                           const SizedBox(width: AppSpacing.md),
                           Expanded(
                             child: Text(
@@ -71,17 +62,12 @@ class TripDetailScreen extends ConsumerWidget {
                         padding: const EdgeInsets.only(left: 12.0),
                         child: SizedBox(
                           height: 30,
-                          child: VerticalDivider(
-                            color: AppColors.textTertiary,
-                          ),
+                          child: VerticalDivider(color: AppColors.textTertiary),
                         ),
                       ),
                       Row(
                         children: [
-                          Icon(
-                            Icons.location_on,
-                            color: AppColors.error,
-                          ),
+                          Icon(Icons.location_on, color: AppColors.error),
                           const SizedBox(width: AppSpacing.md),
                           Expanded(
                             child: Text(
@@ -97,24 +83,23 @@ class TripDetailScreen extends ConsumerWidget {
                 const SizedBox(height: AppSpacing.lg),
 
                 // Trip details
-                Text(
-                  'Trip Details',
-                  style: AppTypography.headingSmall,
-                ),
+                Text('Trip Details', style: AppTypography.headingSmall),
                 const SizedBox(height: AppSpacing.md),
-                _buildDetailRow('Departure', '${trip.departureTime.hour}:${trip.departureTime.minute.toString().padLeft(2, '0')}'),
+                _buildDetailRow(
+                  'Departure',
+                  '${trip.departureTime.hour}:${trip.departureTime.minute.toString().padLeft(2, '0')}',
+                ),
                 _buildDetailRow('Cost per seat', '₹${trip.costPerSeat}'),
-                _buildDetailRow('Seats available', '${trip.seatsRemaining}/${trip.seatsAvailable}'),
-                if (trip.womenOnly)
-                  _buildDetailRow('Women only', 'Yes'),
+                _buildDetailRow(
+                  'Seats available',
+                  '${trip.seatsRemaining}/${trip.seatsAvailable}',
+                ),
+                if (trip.womenOnly) _buildDetailRow('Women only', 'Yes'),
 
                 const SizedBox(height: AppSpacing.lg),
 
                 // Host info
-                Text(
-                  'Host',
-                  style: AppTypography.headingSmall,
-                ),
+                Text('Host', style: AppTypography.headingSmall),
                 const SizedBox(height: AppSpacing.md),
                 Container(
                   padding: const EdgeInsets.all(AppSpacing.md),
@@ -139,7 +124,8 @@ class TripDetailScreen extends ConsumerWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              trip.host?['display_name'] as String? ?? 'Unknown',
+                              trip.host?['display_name'] as String? ??
+                                  'Unknown',
                               style: AppTypography.bodyMedium,
                             ),
                             if (trip.host?['average_rating'] != null)
@@ -179,9 +165,7 @@ class TripDetailScreen extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stackTrace) => Center(
-          child: Text('Error: $error'),
-        ),
+        error: (error, stackTrace) => Center(child: Text('Error: $error')),
       ),
     );
   }
@@ -210,14 +194,16 @@ class TripDetailScreen extends ConsumerWidget {
   }
 
   void _joinTrip(BuildContext context, WidgetRef ref, trip) {
-    ref.read(joinTripProvider.notifier).joinTrip(
-      tripOfferId: trip.id,
-      costPerRider: trip.costPerSeat.toDouble(),
-    );
+    ref
+        .read(joinTripProvider.notifier)
+        .joinTrip(
+          tripOfferId: trip.id,
+          costPerRider: trip.costPerSeat.toDouble(),
+        );
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Successfully joined trip!')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Successfully joined trip!')));
     context.pop();
   }
 }
