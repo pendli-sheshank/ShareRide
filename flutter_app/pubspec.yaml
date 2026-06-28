@@ -1,0 +1,70 @@
+name: shareride
+description: "ShareRide - Cost-sharing carpool coordination app for Indian students"
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Backend & Auth
+  supabase_flutter: ^1.10.0
+
+  # Navigation & Routing
+  go_router: ^13.0.0
+
+  # State Management
+  riverpod: ^2.4.0
+  riverpod_annotation: ^2.1.0
+  flutter_riverpod: ^2.4.0
+
+  # Firebase (Notifications & Analytics)
+  firebase_core: ^2.28.0
+  firebase_messaging: ^14.8.0
+  firebase_analytics: ^10.9.0
+  firebase_remote_config: ^4.4.0
+
+  # Crash Reporting
+  sentry_flutter: ^7.15.0
+
+  # Storage & Utilities
+  flutter_secure_storage: ^9.2.0
+  flutter_dotenv: ^5.1.0
+  shared_preferences: ^2.2.0
+
+  # JSON Serialization
+  json_annotation: ^4.8.0
+
+  # HTTP & Networking
+  http: ^1.1.0
+
+  # Logging
+  logger: ^2.2.0
+
+  # Formatting
+  intl: ^0.19.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^3.0.0
+
+  # Code Generation
+  build_runner: ^2.4.0
+  riverpod_generator: ^2.3.0
+  json_serializable: ^6.7.0
+
+  # Testing
+  mockito: ^5.4.0
+  integration_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/
