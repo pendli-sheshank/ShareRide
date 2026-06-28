@@ -6,11 +6,7 @@ import '../providers/auth_provider.dart';
 import 'auth/login_screen.dart';
 import 'auth/otp_verification_screen.dart';
 import 'widgets/app_shell.dart';
-import '../screens/tabs/browse_rides_screen.dart';
-import '../screens/tabs/my_rides_screen.dart';
-import '../screens/tabs/post_ride_screen.dart';
-import '../screens/tabs/chat_screen.dart';
-import '../screens/tabs/profile_screen.dart';
+import 'feature_flag_routes.dart';
 import '../screens/trip/trip_detail_screen.dart';
 import '../screens/chat/chat_detail_screen.dart';
 
@@ -65,27 +61,27 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/',
             name: 'browse',
-            builder: (context, state) => const BrowseRidesScreen(),
+            builder: (context, state) => const BrowseRidesScreenGated(),
           ),
           GoRoute(
             path: '/myrides',
             name: 'myrides',
-            builder: (context, state) => const MyRidesScreen(),
+            builder: (context, state) => const MyRidesScreenGated(),
           ),
           GoRoute(
             path: '/post',
             name: 'post',
-            builder: (context, state) => const PostRideScreen(),
+            builder: (context, state) => const PostRideScreenGated(),
           ),
           GoRoute(
             path: '/chat',
             name: 'chat',
-            builder: (context, state) => const ChatScreen(),
+            builder: (context, state) => const ChatScreenGated(),
           ),
           GoRoute(
             path: '/profile',
             name: 'profile',
-            builder: (context, state) => const ProfileScreen(),
+            builder: (context, state) => const ProfileScreenGated(),
           ),
         ],
       ),

@@ -157,22 +157,109 @@ flutter build ios --release
 - **AuthService** - OTP flow and session management
 - **NotificationsService** - Firebase messaging
 
-## Features (Phase 1: Auth Foundation)
+## Project Status
 
-- ✅ Email OTP authentication
-- ✅ Session persistence (secure token storage)
-- ✅ Auth state management with Riverpod
-- ✅ Navigation guards (redirect to login if not authenticated)
-- ✅ Tab navigation shell
+**Current Phase:** Phase 5 (Gradual Rollout) — Feature flag infrastructure complete ✅
 
-## Upcoming (Phase 2: Core Screens)
+### Phases Completed
 
-- Browse Rides
-- My Rides / Requests
-- Post Ride
-- Chat (real-time messaging)
-- Profile
-- Ratings & Reviews
+**Phase 1: Auth Foundation** ✅
+- Email OTP authentication
+- Session persistence (secure token storage)
+- Auth state management with Riverpod
+- Navigation guards (redirect to login if not authenticated)
+- Tab navigation shell
+
+**Phase 2: Core Screens** ✅
+- Browse Rides (trip listings with filtering)
+- My Rides / Requests (user's posted offers and ride requests)
+- Post Ride (form to create new trips)
+- Chat (real-time messaging via Supabase Realtime)
+- Profile (user info, vehicle management, settings)
+- Trip Detail Screen (full trip info with join action)
+- Chat Detail Screen (real-time message thread)
+
+**Phase 3: Supporting Features** ✅
+- Ratings & Reviews (post-trip feedback)
+- Push Notifications (Firebase Cloud Messaging)
+- Trip Sharing via Link (deep linking)
+- No-show Tracking (indicator on profiles)
+- Report Modal (flag inappropriate behavior)
+- UI Polish (Material 3 theme, dark mode support)
+
+**Phase 4: Testing & Optimization** ✅
+- Unit tests for services (query logic, data transformation)
+- Widget tests for complex components
+- Integration tests (end-to-end flows)
+- Performance profiling and optimization
+- Crash reporting setup (Sentry)
+
+**Phase 5: Gradual Rollout** ✅ (Infrastructure Complete)
+- Feature flag routing system (Firebase Remote Config)
+- Conditional screen rendering (Flutter vs "Coming Soon")
+- Comprehensive testing guides
+- CI/CD pipeline fixes (Flutter action architecture mismatch resolved)
+- Ready for Firebase configuration and user testing
+
+## Phase 5: Gradual Rollout with Feature Flags
+
+Each screen is controlled by a Firebase Remote Config feature flag, enabling gradual rollout without app updates:
+
+### Feature Flags
+
+| Flag | Default | Purpose |
+|------|---------|---------|
+| `use_flutter_browse_rides` | false | Enable/disable Browse Rides screen |
+| `use_flutter_my_rides` | false | Enable/disable My Rides screen |
+| `use_flutter_post_ride` | false | Enable/disable Post Ride screen |
+| `use_flutter_chat` | false | Enable/disable Chat screen |
+| `use_flutter_profile` | false | Enable/disable Profile screen |
+| `flutter_rollout_percentage` | 0 | User rollout percentage (0-100) |
+| `min_app_version` | "1.0.0" | Minimum app version required |
+| `crash_reporting_enabled` | true | Enable/disable Sentry |
+| `performance_monitoring_enabled` | true | Enable/disable performance tracking |
+
+### How It Works
+
+1. **App Startup:** Firebase Remote Config is fetched and cached
+2. **Screen Render:** Each tab checks its feature flag
+3. **Conditional UI:**
+   - **Flag = true:** Show Flutter screen with real data
+   - **Flag = false:** Show "Coming Soon" placeholder
+4. **Instant Abort:** Can disable any screen in Firebase Console without app update
+
+### Rollout Schedule
+
+- **Week 1:** Enable 1 screen to 10% of users, monitor for crashes
+- **Week 2:** Enable more screens to 50% of users
+- **Week 3:** Enable all screens to 100% of users
+- **Week 4+:** Deprecate React Native version
+
+### Setup Instructions
+
+See `PHASE5_FIREBASE_SETUP.md` in project root for:
+1. Create Firebase project
+2. Obtain credentials (google-services.json, GoogleService-Info.plist)
+3. Update `firebase_options.dart`
+4. Enable Remote Config in Firebase Console
+5. Create the 8 parameters above
+6. Configure rollout targeting
+
+### Local Testing
+
+See `PHASE5_LOCAL_TESTING.md` for 10 detailed test cases:
+1. Feature flag disabled (default)
+2. Single screen enabled
+3. All screens enabled
+4. Runtime toggle simulation
+5. Network offline behavior
+6. Min app version check
+7. Crash reporting verification
+8. Performance monitoring
+9. Deep linking
+10. Auth session persistence
+
+Each test includes setup, expected behavior, and verification checklist.
 
 ## Deployment
 
@@ -241,6 +328,48 @@ flutter run
 - [Supabase Docs](https://supabase.com/docs)
 - [Go Router Docs](https://pub.dev/packages/go_router)
 
-## Migration Status
+## CI/CD Pipeline
 
-See `/root/.claude/plans/status.json` for current phase and progress.
+Automated builds, tests, and deployments via GitHub Actions (`.github/workflows/flutter-ci-cd.yml`):
+
+### Jobs
+
+| Job | Status | Purpose |
+|-----|--------|---------|
+| **test** | ✅ Fixed | Unit & widget tests with coverage reporting |
+| **performance** | ✅ Fixed | Performance benchmarks |
+| **build-android** | ✅ Fixed | Release APK build for testing |
+| **build-ios** | ⚠️ Optional | Release IPA build (continue-on-error) |
+| **deploy-beta** | ✅ Ready | Firebase App Distribution (beta testers) |
+| **notify** | ✅ Ready | Build status notifications |
+
+### Recent Fixes
+
+- **Fixed:** Flutter action arm64 architecture mismatch
+  - Added `architecture: x64` to all subosito/flutter-action steps
+  - Resolved: "Unable to determine Flutter version for channel: stable architecture: arm64"
+  - Now all builds use x64 Flutter SDK for ubuntu-latest and macos-latest runners
+
+### Triggering Builds
+
+Builds run automatically on:
+- Push to `main` branch
+- Push to `claude/kmp-vs-react-native-m51ceo` branch
+- Pull requests to `main`
+
+View build status and logs:
+```
+GitHub → Actions → flutter-ci-cd.yml → [run]
+```
+
+## Documentation
+
+See project root for comprehensive guides:
+
+- **PHASE5_COMPLETION_SUMMARY.md** — Full architecture, rollout schedule, success criteria
+- **PHASE5_FIREBASE_SETUP.md** — Step-by-step Firebase configuration
+- **PHASE5_LOCAL_TESTING.md** — 10 test cases with verification checklists
+- **MIGRATION_STATUS.md** — Complete project overview and current status
+- **LOCAL_BUILD_GUIDE.md** — Step-by-step build instructions
+- **BUILD_FIXES_SUMMARY.md** — Detailed explanation of all build issues and fixes
+- **FLUTTER_BUILD_TROUBLESHOOTING.md** — Common issues and solutions guide
