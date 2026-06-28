@@ -7,6 +7,8 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 import 'app/routes.dart';
 import 'constants/theme.dart';
 import 'firebase_options.dart';
+import 'services/feature_flags_service.dart';
+import 'services/monitoring_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,6 +27,12 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  // Initialize Feature Flags (Phase 5: Flutter rollout)
+  await FeatureFlagsService().initialize();
+
+  // Initialize Monitoring (crash reporting + performance)
+  await MonitoringService().initialize();
 
   // Initialize Sentry for crash reporting
   await SentryFlutter.init(
