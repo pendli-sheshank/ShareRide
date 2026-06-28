@@ -17,7 +17,7 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: 'latest'
+          flutter-version: 'stable'
 
       - name: Get dependencies
         working-directory: ./flutter_app
@@ -49,7 +49,7 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: 'latest'
+          flutter-version: 'stable'
 
       - name: Get dependencies
         working-directory: ./flutter_app
@@ -68,7 +68,7 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: 'latest'
+          flutter-version: 'stable'
 
       - name: Get dependencies
         working-directory: ./flutter_app
@@ -94,7 +94,7 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: 'latest'
+          flutter-version: 'stable'
 
       - name: Get dependencies
         working-directory: ./flutter_app
