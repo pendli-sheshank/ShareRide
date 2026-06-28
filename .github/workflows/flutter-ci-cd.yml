@@ -98,6 +98,16 @@ jobs:
         working-directory: ./flutter_app
         run: flutter pub get
 
+      - name: Configure local.properties
+        working-directory: ./flutter_app/android
+        run: |
+          if [ ! -f local.properties ]; then
+            echo "flutter.sdk=$FLUTTER_HOME" > local.properties
+            echo "✅ local.properties created with Flutter SDK path"
+          else
+            echo "✅ local.properties already exists"
+          fi
+
       - name: Check AndroidX migration
         working-directory: ./flutter_app/android
         run: |
