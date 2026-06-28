@@ -6,8 +6,6 @@ import '../screens/tabs/my_rides_screen.dart';
 import '../screens/tabs/post_ride_screen.dart';
 import '../screens/tabs/chat_screen.dart';
 import '../screens/tabs/profile_screen.dart';
-import '../screens/trip/trip_detail_screen.dart';
-import '../screens/chat/chat_detail_screen.dart';
 
 /// Feature flag-gated screen wrapper
 /// Displays Flutter screen if feature flag is enabled, otherwise shows placeholder for React Native fallback

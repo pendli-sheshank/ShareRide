@@ -51,7 +51,7 @@ class MyRidesScreen extends ConsumerWidget {
                         const SizedBox(height: AppSpacing.lg),
                         ElevatedButton.icon(
                           onPressed: () {
-                            DefaultTabController.of(context)?.animateTo(1);
+                            DefaultTabController.of(context).animateTo(1);
                           },
                           icon: const Icon(Icons.add),
                           label: const Text('Post a Trip'),
@@ -118,7 +118,7 @@ class MyRidesScreen extends ConsumerWidget {
                     itemCount: matches.length,
                     itemBuilder: (context, index) {
                       final match = matches[index];
-                      final trip = match.tripOffer as Map<String, dynamic>?;
+                      final trip = match.tripOffer;
 
                       return Container(
                         margin: const EdgeInsets.only(bottom: AppSpacing.md),

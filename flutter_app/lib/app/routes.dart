@@ -1,14 +1,10 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import '../providers/auth_provider.dart';
 import 'auth/login_screen.dart';
 import 'auth/otp_verification_screen.dart';
 import 'widgets/app_shell.dart';
 import 'feature_flag_routes.dart';
-import '../screens/trip/trip_detail_screen.dart';
-import '../screens/chat/chat_detail_screen.dart';
 
 final goRouterProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authStateStreamProvider);

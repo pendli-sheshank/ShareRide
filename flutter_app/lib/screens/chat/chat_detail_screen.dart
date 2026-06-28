@@ -64,7 +64,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: matchAsync.when(
+        title: matchAsync.maybeWhen(
           data: (match) {
             if (match == null) return const Text('Chat');
             final otherUserId = currentUserAsync.maybeWhen(

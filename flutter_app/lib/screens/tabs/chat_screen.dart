@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../constants/theme.dart';
 import '../../providers/matches_provider.dart';
+import '../../providers/auth_provider.dart';
 
 class ChatScreen extends ConsumerWidget {
   const ChatScreen({Key? key}) : super(key: key);
@@ -56,15 +57,15 @@ class ChatScreen extends ConsumerWidget {
               itemCount: chatMatches.length,
               itemBuilder: (context, index) {
                 final match = chatMatches[index];
-                final trip = match.tripOffer as Map<String, dynamic>?;
-                final otherUser = match.riderId == ref.watch(
+                final currentUserId = ref.watch(
                       currentUserProvider.select(
                         (u) => u.maybeWhen(
                           data: (user) => user?.id,
                           orElse: () => null,
                         ),
                       ),
-                    )
+                    );
+                final otherUser = match.riderId == currentUserId
                     ? match.host
                     : match.rider;
 

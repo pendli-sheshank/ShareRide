@@ -120,7 +120,6 @@ final ThemeData appTheme = ThemeData(
     secondary: AppColors.secondary,
     onSecondary: Colors.white,
     error: AppColors.error,
-    background: AppColors.background,
     surface: AppColors.surface,
   ),
   scaffoldBackgroundColor: AppColors.background,
