@@ -39,7 +39,7 @@ class ProfileScreen extends ConsumerWidget {
                       radius: 40,
                       backgroundColor: AppColors.primary,
                       child: Text(
-                        (user.email[0]).toUpperCase(),
+                        (user.email?.isNotEmpty == true ? user.email![0] : '?').toUpperCase(),
                         style: AppTypography.displayMedium.copyWith(
                           color: Colors.white,
                         ),
@@ -47,7 +47,7 @@ class ProfileScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: AppSpacing.md),
                     Text(
-                      user.email,
+                      user.email ?? 'No email',
                       style: AppTypography.headingMedium,
                     ),
                     const SizedBox(height: AppSpacing.sm),

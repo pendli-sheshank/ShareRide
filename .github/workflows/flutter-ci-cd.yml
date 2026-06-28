@@ -29,6 +29,11 @@ jobs:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true
 
+      - name: Verify Flutter
+        run: |
+          flutter --version
+          which flutter
+
       - name: Get dependencies
         working-directory: ${{ env.WORKING_DIR }}
         run: flutter pub get
@@ -58,6 +63,11 @@ jobs:
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true
+
+      - name: Verify Flutter
+        run: |
+          flutter --version
+          which flutter
 
       - name: Get dependencies
         working-directory: ${{ env.WORKING_DIR }}
