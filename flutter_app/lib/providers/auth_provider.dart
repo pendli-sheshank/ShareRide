@@ -33,7 +33,8 @@ final isAuthenticatedProvider = StreamProvider<bool>((ref) {
 });
 
 // User profile provider
-final userProfileProvider = FutureProvider<Map<String, dynamic>?>((ref) async {
+final userProfileProvider =
+    FutureProvider<Map<String, dynamic>?>((ref) async {
   final user = await ref.watch(currentUserProvider.future);
   if (user == null) return null;
 
@@ -60,7 +61,8 @@ class SignInNotifier extends StateNotifier<AsyncValue<void>> {
   }
 }
 
-final signInProvider = StateNotifierProvider.autoDispose<SignInNotifier, AsyncValue<void>>((ref) {
+final signInProvider =
+    StateNotifierProvider.autoDispose<SignInNotifier, AsyncValue<void>>((ref) {
   final authService = ref.watch(authServiceProvider);
   return SignInNotifier(authService);
 });
@@ -77,7 +79,8 @@ class LogoutNotifier extends StateNotifier<AsyncValue<void>> {
   }
 }
 
-final logoutProvider = StateNotifierProvider.autoDispose<LogoutNotifier, AsyncValue<void>>((ref) {
+final logoutProvider =
+    StateNotifierProvider.autoDispose<LogoutNotifier, AsyncValue<void>>((ref) {
   final authService = ref.watch(authServiceProvider);
   return LogoutNotifier(authService);
 });
