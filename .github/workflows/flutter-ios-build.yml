@@ -63,7 +63,7 @@ jobs:
 
       - name: Upload coverage
         uses: codecov/codecov-action@v4
-        if: hashFiles('${{ env.WORKING_DIR }}/coverage/lcov.info') != ''
+        if: ${{ hashFiles('flutter_app/coverage/lcov.info') != '' }}
         with:
           files: ${{ env.WORKING_DIR }}/coverage/lcov.info
           flags: flutter
