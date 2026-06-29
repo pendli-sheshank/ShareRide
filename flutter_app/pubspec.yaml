@@ -26,7 +26,7 @@ dependencies:
   firebase_core: ^2.31.0
   firebase_messaging: ^15.0.0
   firebase_analytics: ^11.0.0
-  firebase_remote_config: ^4.6.0
+  firebase_remote_config: ^4.4.0
 
   # Crash Reporting
   sentry_flutter: ^8.0.0
