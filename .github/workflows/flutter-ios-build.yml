@@ -86,15 +86,23 @@ jobs:
         working-directory: ${{ env.WORKING_DIR }}
         run: flutter pub get
 
-      - name: Check iOS project files
-        working-directory: ${{ env.WORKING_DIR }}/ios
+      - name: Ensure iOS project files exist (generate if missing)
+        working-directory: ${{ env.WORKING_DIR }}
         run: |
-          if [ ! -d "Runner.xcodeproj" ]; then
-            echo "❌ ERROR: Runner.xcodeproj not found"
-            echo "iOS project files missing. Generate with ios-setup workflow first."
-            exit 1
+          set -e
+          if [ -d "ios/Runner.xcodeproj" ] || [ -d "ios/Runner.xcworkspace" ]; then
+            echo "✅ iOS project files found"
+          else
+            echo "⚠️ iOS project not found — generating iOS project via 'flutter create'"
+            flutter create --platforms=ios .
+            # Confirm generation
+            if [ -d "ios/Runner.xcodeproj" ] || [ -d "ios/Runner.xcworkspace" ]; then
+              echo "✅ iOS project generated successfully"
+            else
+              echo "❌ Failed to generate iOS project"
+              exit 1
+            fi
           fi
-          echo "✅ iOS project files found"
 
       - name: Install CocoaPods dependencies
         working-directory: ${{ env.WORKING_DIR }}/ios
