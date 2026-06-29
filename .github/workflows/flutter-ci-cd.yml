@@ -110,15 +110,9 @@ jobs:
         run: |
           echo "Creating local.properties with Flutter SDK path..."
           echo "FLUTTER_ROOT: $FLUTTER_ROOT"
-          echo "FLUTTER_HOME: $FLUTTER_HOME"
-          flutter --version
-          flutter config --android-sdk
-          FLUTTER_SDK_PATH=$(flutter config --android-sdk | grep -oP '(?<=Android SDK path: ).*' || echo $FLUTTER_ROOT)
-          echo "flutter.sdk=$FLUTTER_SDK_PATH" > local.properties
+          echo "flutter.sdk=$FLUTTER_ROOT" > local.properties
           echo "Created local.properties:"
           cat local.properties
-          echo "Directory contents:"
-          ls -la
 
       - name: Get Flutter dependencies
         working-directory: ${{ env.WORKING_DIR }}
