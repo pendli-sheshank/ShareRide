@@ -1,0 +1,142 @@
+name: Flutter iOS Build & Test
+
+on:
+  push:
+    branches: [main, develop, claude/supabase-mcp-setup-46mygk]
+  pull_request:
+    branches: [main, develop, claude/supabase-mcp-setup-46mygk]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  FLUTTER_VERSION: '3.22.0'
+  FLUTTER_CHANNEL: 'stable'
+  WORKING_DIR: './flutter_app'
+
+jobs:
+  validate:
+    name: Code Quality Check
+    runs-on: macos-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - name: Get dependencies
+        working-directory: ${{ env.WORKING_DIR }}
+        run: flutter pub get
+
+      - name: Analyze code
+        working-directory: ${{ env.WORKING_DIR }}
+        run: flutter analyze
+
+      - name: Format check
+        working-directory: ${{ env.WORKING_DIR }}
+        run: dart format --set-exit-if-changed .
+
+  test:
+    name: Unit & Widget Tests
+    runs-on: macos-latest
+    needs: validate
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - name: Get dependencies
+        working-directory: ${{ env.WORKING_DIR }}
+        run: flutter pub get
+
+      - name: Run tests
+        working-directory: ${{ env.WORKING_DIR }}
+        run: flutter test --coverage
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v4
+        if: hashFiles('${{ env.WORKING_DIR }}/coverage/lcov.info') != ''
+        with:
+          files: ${{ env.WORKING_DIR }}/coverage/lcov.info
+          flags: flutter
+          fail_ci_if_error: false
+
+  build-ios:
+    name: Build iOS App
+    runs-on: macos-latest
+    needs: validate
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - name: Get Flutter dependencies
+        working-directory: ${{ env.WORKING_DIR }}
+        run: flutter pub get
+
+      - name: Check iOS project files
+        working-directory: ${{ env.WORKING_DIR }}/ios
+        run: |
+          if [ ! -d "Runner.xcodeproj" ]; then
+            echo "❌ ERROR: Runner.xcodeproj not found"
+            echo "iOS project files missing. Generate with ios-setup workflow first."
+            exit 1
+          fi
+          echo "✅ iOS project files found"
+
+      - name: Install CocoaPods dependencies
+        working-directory: ${{ env.WORKING_DIR }}/ios
+        run: |
+          pod install --repo-update 2>/dev/null || pod install
+
+      - name: Build iOS (Release)
+        working-directory: ${{ env.WORKING_DIR }}
+        run: |
+          flutter build ios \
+            --release \
+            --no-codesign \
+            --verbose
+
+      - name: Create IPA
+        run: |
+          cd ${{ env.WORKING_DIR }}/build/ios/Release-iphoneos
+          mkdir -p Payload
+          cp -r Runner.app Payload/
+          cd Payload
+          zip -r ../app-release.ipa Runner.app >/dev/null 2>&1
+          cd ..
+          ls -lh app-release.ipa
+
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release.ipa
+          path: ${{ env.WORKING_DIR }}/build/ios/Release-iphoneos/app-release.ipa
+          retention-days: 7
+
+  build-complete:
+    name: Build Complete
+    runs-on: macos-latest
+    needs: [validate, test, build-ios]
+    if: always()
+    steps:
+      - name: Check build status
+        run: |
+          if [ "${{ needs.build-ios.result }}" = "failure" ]; then
+            echo "❌ iOS build failed"
+            exit 1
+          else
+            echo "✅ All iOS builds and tests completed successfully"
+          fi
