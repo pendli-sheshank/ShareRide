@@ -1,7 +1,7 @@
 # Podfile
 # CocoaPods documentation: https://guides.cocoapods.org/using/the-podfile.html
 
-platform :ios, '12.0'
+platform :ios, '13.0'
 
 def flutter_root
   generated_xcode_build_settings_path = File.expand_path(File.join(
@@ -38,7 +38,7 @@ post_install do |installer|
         'PERMISSION_CAMERA=1',
         'PERMISSION_LOCATION=1',
       ]
-      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '12.0'
+      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '13.0'
       config.build_settings['ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES'] = 'YES'
     end
   end
