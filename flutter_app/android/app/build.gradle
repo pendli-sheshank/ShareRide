@@ -2,10 +2,11 @@ plugins {
     id "com.android.application"
     id "kotlin-android"
     id "dev.flutter.flutter-gradle-plugin"
+    id "com.google.gms.google-services"
 }
 
 android {
-    namespace = "com.shareride.app"
+    namespace = "com.sawaarishare.app"
     compileSdkVersion 34
 
     compileOptions {
@@ -22,7 +23,7 @@ android {
     }
 
     defaultConfig {
-        applicationId "com.shareride.app"
+        applicationId "com.sawaarishare.app"
         minSdkVersion 21
         targetSdkVersion 34
         versionCode flutterVersionCode.toInteger()
@@ -41,5 +42,23 @@ flutter {
 }
 
 dependencies {
-    // Firebase dependencies are handled by flutter_tools and pubspec.yaml
+    // Import the Firebase BoM
+    implementation platform("com.google.firebase:firebase-bom:34.15.0")
+
+    // Firebase Analytics
+    implementation "com.google.firebase:firebase-analytics"
+
+    // Firebase Crashlytics
+    implementation "com.google.firebase:firebase-crashlytics"
+
+    // Firebase Cloud Messaging (for push notifications)
+    implementation "com.google.firebase:firebase-messaging"
+
+    // Firebase Remote Config (for feature flags)
+    implementation "com.google.firebase:firebase-config"
+
+    // Firebase Auth
+    implementation "com.google.firebase:firebase-auth"
+
+    // Other Firebase dependencies are handled by flutter_tools and pubspec.yaml
 }

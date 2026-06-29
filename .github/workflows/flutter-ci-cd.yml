@@ -2,9 +2,9 @@ name: Flutter CI/CD Pipeline
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main, develop, claude/supabase-mcp-setup-46mygk]
   pull_request:
-    branches: [main, develop]
+    branches: [main, develop, claude/supabase-mcp-setup-46mygk]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
