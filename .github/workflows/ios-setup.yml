@@ -117,22 +117,7 @@ New files created:
 - ios/Pods/ (CocoaPods dependencies)
 - ios/Podfile.lock (Dependency lock file)
 
-Next steps:
-1. Manually add GoogleService-Info.plist to Xcode:
-   - File > Add Files to Runner
-   - Select: ios/GoogleService-Info.plist
-   - Check 'Copy items if needed'
-
-2. Add Firebase libraries in Xcode:
-   - File > Add Packages
-   - URL: https://github.com/firebase/firebase-ios-sdk
-   - Select: FirebaseCore, FirebaseAnalytics, FirebaseCrashlytics,
-            FirebaseMessaging, FirebaseRemoteConfig, FirebaseAuth
-
-3. Build and test:
-   flutter build ios --release --no-codesign
-
-This generated iOS project is ready for Firebase integration."
+Next steps: See FIREBASE_IOS_SETUP.md for configuration instructions."
             git push origin ${{ github.ref }}
             echo "✅ Committed iOS files"
           else
