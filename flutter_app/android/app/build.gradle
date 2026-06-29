@@ -2,10 +2,11 @@ plugins {
     id "com.android.application"
     id "kotlin-android"
     id "dev.flutter.flutter-gradle-plugin"
+    id "com.google.gms.google-services"
 }
 
 android {
-    namespace = "com.shareride.app"
+    namespace = "com.sawaarishare.app"
     compileSdkVersion 34
 
     compileOptions {
@@ -22,7 +23,7 @@ android {
     }
 
     defaultConfig {
-        applicationId "com.shareride.app"
+        applicationId "com.sawaarishare.app"
         minSdkVersion 21
         targetSdkVersion 34
         versionCode flutterVersionCode.toInteger()
