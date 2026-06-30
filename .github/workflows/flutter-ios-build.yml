@@ -49,7 +49,6 @@ jobs:
           [ -z "${{ secrets.GOOGLESERVICE_INFO_PLIST }}" ] && MISSING+=("GOOGLESERVICE_INFO_PLIST")
           [ -z "${{ secrets.SUPABASE_URL }}" ] && MISSING+=("SUPABASE_URL")
           [ -z "${{ secrets.SUPABASE_ANON_KEY }}" ] && MISSING+=("SUPABASE_ANON_KEY")
-          [ -z "${{ secrets.SENTRY_DSN }}" ] && MISSING+=("SENTRY_DSN")
           if [ ${#MISSING[@]} -gt 0 ]; then
             echo "::error::Missing required secrets: ${MISSING[*]}"
             exit 1
@@ -124,14 +123,12 @@ jobs:
               "SUPABASE_URL=https://placeholder.supabase.co" \
               "SUPABASE_ANON_KEY=placeholder-anon-key" \
               "FIREBASE_PROJECT_ID=placeholder-project" \
-              "SENTRY_DSN=https://placeholder@sentry.io/0" \
               > .env
           else
             printf '%s\n' \
               "SUPABASE_URL=${{ secrets.SUPABASE_URL }}" \
               "SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}" \
               "FIREBASE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }}" \
-              "SENTRY_DSN=${{ secrets.SENTRY_DSN }}" \
               > .env
           fi
 
