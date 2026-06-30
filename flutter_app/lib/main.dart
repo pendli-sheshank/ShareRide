@@ -1,9 +1,10 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:sentry_flutter/sentry_flutter.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'app/routes.dart';
 import 'constants/theme.dart';
 import 'firebase_options.dart';
@@ -31,35 +32,25 @@ void main() async {
     // This can happen in test/build environments without proper credentials
   }
 
-  // Initialize Firebase
+  // Initialize Firebase & Crashlytics
   try {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
+
+    // Pass all Flutter framework errors to Crashlytics
+    FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
+
+    // Pass all uncaught asynchronous errors to Crashlytics
+    PlatformDispatcher.instance.onError = (error, stack) {
+      FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+      return true;
+    };
   } catch (e) {
-    // Firebase initialization failed - continue without it (notifications won't work but app will run)
+    // Firebase initialization failed - continue without crash reporting
   }
 
-  // Initialize Sentry for crash reporting
-  try {
-    await SentryFlutter.init((options) {
-      options.dsn = dotenv.env['SENTRY_DSN'];
-      options.tracesSampleRate = 1.0;
-      options.environment =
-          const bool.fromEnvironment('dart.vm.profile') ? 'debug' : 'release';
-    }, appRunner: () => runApp(const ProviderScope(child: ShareRideApp())));
-  } catch (e) {
-    // Sentry initialization failed - run app without crash reporting
-    runApp(const ProviderScope(child: ShareRideApp()));
-  }
-}
-
-// Handler for widget binding errors
-class ErrorHandler {
-  static void handleError(FlutterErrorDetails details) {
-    // Log to Sentry
-    Sentry.captureException(details.exception, stackTrace: details.stack);
-  }
+  runApp(const ProviderScope(child: ShareRideApp()));
 }
 
 class ShareRideApp extends ConsumerWidget {
