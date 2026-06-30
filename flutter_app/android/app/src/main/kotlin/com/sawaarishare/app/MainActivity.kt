@@ -1,4 +1,4 @@
-package com.shareride.app
+package com.sawaarishare.app
 
 import io.flutter.embedding.android.FlutterActivity
 
