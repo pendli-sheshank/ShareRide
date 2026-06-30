@@ -44,6 +44,14 @@ jobs:
             echo "::error::GOOGLE_SERVICES_JSON secret is required for Android release builds."
             exit 1
           fi
+          echo "${{ secrets.GOOGLE_SERVICES_JSON }}" | base64 --decode > /tmp/google-services.json || {
+            echo "::error::GOOGLE_SERVICES_JSON must be valid base64 content."
+            exit 1
+          }
+          python -m json.tool /tmp/google-services.json >/dev/null || {
+            echo "::error::GOOGLE_SERVICES_JSON must decode to valid JSON."
+            exit 1
+          }
 
       - name: Get dependencies
         working-directory: ${{ env.WORKING_DIR }}
@@ -95,7 +103,21 @@ jobs:
                 "project_id": "placeholder-project",
                 "storage_bucket": "placeholder-project.appspot.com"
               },
-              "client": [],
+              "client": [
+                {
+                  "client_info": {
+                    "mobilesdk_app_id": "1:000000000000:android:placeholder",
+                    "android_client_info": {
+                      "package_name": "com.sawaarishare.app"
+                    }
+                  },
+                  "api_key": [
+                    {
+                      "current_key": "placeholder"
+                    }
+                  ]
+                }
+              ],
               "configuration_version": "1"
             }
             EOF
