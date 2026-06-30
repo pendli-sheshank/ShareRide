@@ -56,7 +56,6 @@ Then update `.env` with your Supabase and Firebase credentials:
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_ANON_KEY=your-anon-key
 FIREBASE_PROJECT_ID=your-firebase-project-id
-SENTRY_DSN=https://your-sentry-dsn
 ```
 
 ### 3. Firebase Configuration
@@ -192,7 +191,7 @@ flutter build ios --release
 - Widget tests for complex components
 - Integration tests (end-to-end flows)
 - Performance profiling and optimization
-- Crash reporting setup (Sentry)
+- Crash reporting setup (Firebase Crashlytics)
 
 **Phase 5: Gradual Rollout** ✅ (Infrastructure Complete)
 - Feature flag routing system (Firebase Remote Config)
@@ -216,8 +215,8 @@ Each screen is controlled by a Firebase Remote Config feature flag, enabling gra
 | `use_flutter_profile` | false | Enable/disable Profile screen |
 | `flutter_rollout_percentage` | 0 | User rollout percentage (0-100) |
 | `min_app_version` | "1.0.0" | Minimum app version required |
-| `crash_reporting_enabled` | true | Enable/disable Sentry |
-| `performance_monitoring_enabled` | true | Enable/disable performance tracking |
+| `enable_crash_reporting` | true | Enable/disable Firebase crash reporting |
+| `enable_performance_monitoring` | true | Enable/disable performance tracking |
 
 ### How It Works
 
@@ -278,10 +277,10 @@ firebase appdistribution:distribute build/app/outputs/bundle/release/app-release
 
 ## Monitoring
 
-### Crash Reporting (Sentry)
+### Crash Reporting (Firebase Crashlytics)
 - Configured in `main.dart`
 - All exceptions are captured and reported
-- Dashboard: [https://sentry.io](https://sentry.io)
+- Dashboard: Firebase Console → Crashlytics
 
 ### Analytics (Firebase)
 - Track user events and flows

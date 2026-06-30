@@ -1,4 +1,6 @@
-import 'package:sentry_flutter/sentry_flutter.dart';
+import 'dart:developer' as developer;
+
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 
 class MonitoringService {
   static final MonitoringService _instance = MonitoringService._internal();
@@ -15,11 +17,13 @@ class MonitoringService {
     if (_initialized) return;
 
     try {
-      // Performance monitoring is automatically enabled by Firebase
-      // Sentry is initialized in main.dart with SentryFlutter.init
+      await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(true);
       _initialized = true;
     } catch (e) {
-      print('Warning: Monitoring initialization failed: $e');
+      developer.log(
+        'Warning: Monitoring initialization failed: $e',
+        name: 'MonitoringService',
+      );
       _initialized = true;
     }
   }
@@ -101,14 +105,22 @@ class MonitoringService {
 
   /// Log breadcrumb for debugging
   void logBreadcrumb(String message, {String? category, String? level}) {
-    Sentry.captureMessage(
-      message,
-      level: level == 'error'
-          ? SentryLevel.error
-          : level == 'warning'
-              ? SentryLevel.warning
-              : SentryLevel.info,
-    );
+    final breadcrumb = [
+      if (level != null) 'level=$level',
+      if (category != null) 'category=$category',
+      'message=$message',
+    ].join(' ');
+
+    try {
+      FirebaseCrashlytics.instance.log(breadcrumb);
+    } catch (e, stackTrace) {
+      developer.log(
+        'Failed to write Crashlytics breadcrumb: $breadcrumb',
+        name: category ?? 'MonitoringService',
+        error: e,
+        stackTrace: stackTrace,
+      );
+    }
   }
 
   /// Capture exception with context
@@ -117,15 +129,23 @@ class MonitoringService {
     StackTrace? stackTrace, {
     String? context,
   }) async {
-    await Sentry.captureException(
-      exception,
-      stackTrace: stackTrace,
-      withScope: (scope) {
-        if (context != null) {
-          scope.setContexts('error_context', {'details': context});
-        }
-      },
-    );
+    try {
+      await FirebaseCrashlytics.instance.recordError(
+        exception,
+        stackTrace,
+        reason: context,
+      );
+    } catch (e, errorStackTrace) {
+      final errorMessage =
+          'Failed to record exception${context != null ? ' ($context)' : ''}: '
+          '$exception';
+      developer.log(
+        errorMessage,
+        name: 'MonitoringService',
+        error: e,
+        stackTrace: errorStackTrace,
+      );
+    }
   }
 
   /// Record custom metric

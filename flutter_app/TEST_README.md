@@ -312,8 +312,8 @@ Monitor in production:
 
 ### Crash Reporting
 
-- All crashes logged to Sentry
-- Monitor dashboard: sentry.io
+- All crashes logged to Firebase Crashlytics
+- Monitor dashboard: Firebase Console → Crashlytics
 - Alert on crash rate spike
 - Auto-create issues for new crash patterns
 
@@ -347,7 +347,7 @@ flutter test -d ios
 - [Mockito Guide](https://pub.dev/packages/mockito)
 - [Integration Testing](https://flutter.dev/docs/testing/integration-tests)
 - [Performance Profiling](https://flutter.dev/docs/perf)
-- [Sentry Docs](https://docs.sentry.io/platforms/dart)
+- [Firebase Crashlytics Docs](https://firebase.google.com/docs/crashlytics)
 
 ## Next Steps
 
