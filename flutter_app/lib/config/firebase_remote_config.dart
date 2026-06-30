@@ -24,8 +24,6 @@ const Map<String, dynamic> firebaseRemoteConfigDefaults = {
   // Monitoring & crash reporting
   'enable_crash_reporting': true,
   'enable_performance_monitoring': true,
-  'sentry_sample_rate': 1.0,
-  'sentry_trace_sample_rate': 0.8,
 
   // Feature toggles for secondary features
   'enable_notifications': true,

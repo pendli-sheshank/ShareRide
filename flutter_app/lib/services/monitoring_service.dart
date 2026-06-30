@@ -1,4 +1,6 @@
-import 'package:sentry_flutter/sentry_flutter.dart';
+import 'dart:developer' as developer;
+
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 
 class MonitoringService {
   static final MonitoringService _instance = MonitoringService._internal();
@@ -15,11 +17,13 @@ class MonitoringService {
     if (_initialized) return;
 
     try {
-      // Performance monitoring is automatically enabled by Firebase
-      // Sentry is initialized in main.dart with SentryFlutter.init
+      await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(true);
       _initialized = true;
     } catch (e) {
-      print('Warning: Monitoring initialization failed: $e');
+      developer.log(
+        'Warning: Monitoring initialization failed: $e',
+        name: 'MonitoringService',
+      );
       _initialized = true;
     }
   }
@@ -101,14 +105,17 @@ class MonitoringService {
 
   /// Log breadcrumb for debugging
   void logBreadcrumb(String message, {String? category, String? level}) {
-    Sentry.captureMessage(
-      message,
-      level: level == 'error'
-          ? SentryLevel.error
-          : level == 'warning'
-              ? SentryLevel.warning
-              : SentryLevel.info,
-    );
+    try {
+      FirebaseCrashlytics.instance.log(
+        [
+          if (level != null) level,
+          if (category != null) category,
+          message,
+        ].join(': '),
+      );
+    } catch (_) {
+      developer.log(message, name: category ?? 'MonitoringService');
+    }
   }
 
   /// Capture exception with context
@@ -117,15 +124,20 @@ class MonitoringService {
     StackTrace? stackTrace, {
     String? context,
   }) async {
-    await Sentry.captureException(
-      exception,
-      stackTrace: stackTrace,
-      withScope: (scope) {
-        if (context != null) {
-          scope.setContexts('error_context', {'details': context});
-        }
-      },
-    );
+    try {
+      await FirebaseCrashlytics.instance.recordError(
+        exception,
+        stackTrace,
+        reason: context,
+      );
+    } catch (_) {
+      developer.log(
+        context == null ? exception.toString() : '$context: $exception',
+        name: 'MonitoringService',
+        error: exception,
+        stackTrace: stackTrace,
+      );
+    }
   }
 
   /// Record custom metric
