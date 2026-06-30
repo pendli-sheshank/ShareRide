@@ -48,7 +48,7 @@ jobs:
             echo "::error::GOOGLE_SERVICES_JSON must be valid base64 content."
             exit 1
           }
-          python -m json.tool /tmp/google-services.json >/dev/null || {
+          jq -e . /tmp/google-services.json >/dev/null || {
             echo "::error::GOOGLE_SERVICES_JSON must decode to valid JSON."
             exit 1
           }
