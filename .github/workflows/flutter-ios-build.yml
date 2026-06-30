@@ -1,10 +1,11 @@
-name: Flutter iOS Build & Test
+name: iOS Build
 
 on:
   push:
-    branches: [main, develop, claude/supabase-mcp-setup-46mygk]
+    branches: [main, develop]
   pull_request:
-    branches: [main, develop, claude/supabase-mcp-setup-46mygk]
+    branches: [main, develop]
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -12,14 +13,13 @@ concurrency:
 
 env:
   FLUTTER_VERSION: '3.22.0'
-  FLUTTER_CHANNEL: 'stable'
-  WORKING_DIR: './flutter_app'
+  WORKING_DIR: flutter_app
 
 jobs:
   validate:
-    name: Code Quality Check
+    name: Validate iOS Flutter Project
     runs-on: macos-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
 
@@ -27,6 +27,14 @@ jobs:
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true
+
+      - name: Preflight iOS project check
+        working-directory: ${{ env.WORKING_DIR }}
+        run: |
+          if [ ! -d ios/Runner.xcodeproj ] || [ ! -f ios/Podfile ]; then
+            echo "::error::Missing ios project files. Ensure flutter_app/ios is committed before running this workflow."
+            exit 1
+          fi
 
       - name: Get dependencies
         working-directory: ${{ env.WORKING_DIR }}
@@ -40,11 +48,15 @@ jobs:
         working-directory: ${{ env.WORKING_DIR }}
         run: dart format --set-exit-if-changed .
 
-  test:
-    name: Unit & Widget Tests
+      - name: Run tests
+        working-directory: ${{ env.WORKING_DIR }}
+        run: flutter test
+
+  build-ios:
+    name: Build iOS App
     runs-on: macos-latest
     needs: validate
-    timeout-minutes: 20
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
 
@@ -57,65 +69,17 @@ jobs:
         working-directory: ${{ env.WORKING_DIR }}
         run: flutter pub get
 
-      - name: Run tests
-        working-directory: ${{ env.WORKING_DIR }}
-        run: flutter test --coverage
-
-      - name: Upload coverage
-        uses: codecov/codecov-action@v4
-        if: ${{ hashFiles('flutter_app/coverage/lcov.info') != '' }}
-        with:
-          files: ${{ env.WORKING_DIR }}/coverage/lcov.info
-          flags: flutter
-          fail_ci_if_error: false
-
-  build-ios:
-    name: Build iOS App
-    runs-on: macos-latest
-    needs: validate
-    timeout-minutes: 60
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: subosito/flutter-action@v2
-        with:
-          flutter-version: ${{ env.FLUTTER_VERSION }}
-          cache: true
-
-      - name: Get Flutter dependencies
-        working-directory: ${{ env.WORKING_DIR }}
-        run: flutter pub get
-
-      - name: Ensure iOS project files exist (generate if missing)
-        working-directory: ${{ env.WORKING_DIR }}
-        run: |
-          set -e
-          if [ -d "ios/Runner.xcodeproj" ] || [ -d "ios/Runner.xcworkspace" ]; then
-            echo "✅ iOS project files found"
-          else
-            echo "⚠️ iOS project not found — generating iOS project via 'flutter create'"
-            flutter create --platforms=ios .
-            # Confirm generation
-            if [ -d "ios/Runner.xcodeproj" ] || [ -d "ios/Runner.xcworkspace" ]; then
-              echo "✅ iOS project generated successfully"
-            else
-              echo "❌ Failed to generate iOS project"
-              exit 1
-            fi
-          fi
-
       - name: Install CocoaPods dependencies
         working-directory: ${{ env.WORKING_DIR }}/ios
         run: |
-          pod install --repo-update 2>/dev/null || pod install
+          pod install --repo-update
 
       - name: Build iOS (Release)
         working-directory: ${{ env.WORKING_DIR }}
         run: |
           flutter build ios \
             --release \
-            --no-codesign \
-            --verbose
+            --no-codesign
 
       - name: Create IPA
         run: |
@@ -132,19 +96,5 @@ jobs:
         with:
           name: app-release.ipa
           path: ${{ env.WORKING_DIR }}/build/ios/Release-iphoneos/app-release.ipa
+          if-no-files-found: error
           retention-days: 7
-
-  build-complete:
-    name: Build Complete
-    runs-on: macos-latest
-    needs: [validate, test, build-ios]
-    if: always()
-    steps:
-      - name: Check build status
-        run: |
-          if [ "${{ needs.build-ios.result }}" = "failure" ]; then
-            echo "❌ iOS build failed"
-            exit 1
-          else
-            echo "✅ All iOS builds and tests completed successfully"
-          fi
