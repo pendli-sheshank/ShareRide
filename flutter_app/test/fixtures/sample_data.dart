@@ -1,8 +1,8 @@
-import '../../lib/models/trip_offer.dart';
-import '../../lib/models/ride_request.dart';
-import '../../lib/models/trip_match.dart';
-import '../../lib/models/chat_message.dart';
-import '../../lib/models/rating.dart';
+import 'package:shareride/models/trip_offer.dart';
+import 'package:shareride/models/ride_request.dart';
+import 'package:shareride/models/trip_match.dart';
+import 'package:shareride/models/chat_message.dart';
+import 'package:shareride/models/rating.dart';
 
 // Sample Trip Offers
 final sampleTripOffers = [
