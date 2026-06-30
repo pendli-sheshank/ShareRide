@@ -91,26 +91,26 @@ jobs:
         working-directory: ${{ env.WORKING_DIR }}/ios/Runner
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            cat > GoogleService-Info.plist <<'EOF'
-          <?xml version="1.0" encoding="UTF-8"?>
-          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0">
-          <dict>
-            <key>API_KEY</key><string>placeholder</string>
-            <key>GCM_SENDER_ID</key><string>000000000000</string>
-            <key>PLIST_VERSION</key><string>1</string>
-            <key>BUNDLE_ID</key><string>com.placeholder.app</string>
-            <key>PROJECT_ID</key><string>placeholder-project</string>
-            <key>STORAGE_BUCKET</key><string>placeholder-project.appspot.com</string>
-            <key>IS_ADS_ENABLED</key><false/>
-            <key>IS_ANALYTICS_ENABLED</key><false/>
-            <key>IS_APPINVITE_ENABLED</key><true/>
-            <key>IS_GCM_ENABLED</key><true/>
-            <key>IS_SIGNIN_ENABLED</key><true/>
-            <key>GOOGLE_APP_ID</key><string>1:000000000000:ios:placeholder</string>
-          </dict>
-          </plist>
-          EOF
+            printf '%s\n' \
+              '<?xml version="1.0" encoding="UTF-8"?>' \
+              '<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">' \
+              '<plist version="1.0">' \
+              '<dict>' \
+              '  <key>API_KEY</key><string>placeholder</string>' \
+              '  <key>GCM_SENDER_ID</key><string>000000000000</string>' \
+              '  <key>PLIST_VERSION</key><string>1</string>' \
+              '  <key>BUNDLE_ID</key><string>com.placeholder.app</string>' \
+              '  <key>PROJECT_ID</key><string>placeholder-project</string>' \
+              '  <key>STORAGE_BUCKET</key><string>placeholder-project.appspot.com</string>' \
+              '  <key>IS_ADS_ENABLED</key><false/>' \
+              '  <key>IS_ANALYTICS_ENABLED</key><false/>' \
+              '  <key>IS_APPINVITE_ENABLED</key><true/>' \
+              '  <key>IS_GCM_ENABLED</key><true/>' \
+              '  <key>IS_SIGNIN_ENABLED</key><true/>' \
+              '  <key>GOOGLE_APP_ID</key><string>1:000000000000:ios:placeholder</string>' \
+              '</dict>' \
+              '</plist>' \
+              > GoogleService-Info.plist
           else
             echo "${{ secrets.GOOGLESERVICE_INFO_PLIST }}" | base64 --decode > GoogleService-Info.plist
           fi
@@ -119,12 +119,17 @@ jobs:
         working-directory: ${{ env.WORKING_DIR }}
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            printf 'SUPABASE_URL=https://placeholder.supabase.co\nSUPABASE_ANON_KEY=placeholder-anon-key\nFIREBASE_PROJECT_ID=placeholder-project\n' > .env
+            printf '%s\n' \
+              "SUPABASE_URL=https://placeholder.supabase.co" \
+              "SUPABASE_ANON_KEY=placeholder-anon-key" \
+              "FIREBASE_PROJECT_ID=placeholder-project" \
+              > .env
           else
-            printf 'SUPABASE_URL=%s\nSUPABASE_ANON_KEY=%s\nFIREBASE_PROJECT_ID=%s\n' \
-              "${{ secrets.SUPABASE_URL }}" \
-              "${{ secrets.SUPABASE_ANON_KEY }}" \
-              "${{ secrets.FIREBASE_PROJECT_ID }}" > .env
+            printf '%s\n' \
+              "SUPABASE_URL=${{ secrets.SUPABASE_URL }}" \
+              "SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}" \
+              "FIREBASE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }}" \
+              > .env
           fi
 
       - name: Install CocoaPods dependencies
