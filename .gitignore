@@ -17,3 +17,7 @@
 *.jks
 google-services.json
 build.log
+
+# Firebase mobile config (local/CI only)
+flutter_app/ios/GoogleService-Info.plist
+flutter_app/android/app/google-services.json
