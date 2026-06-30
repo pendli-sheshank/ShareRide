@@ -11,6 +11,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 env:
   FLUTTER_VERSION: '3.22.0'
   WORKING_DIR: flutter_app
@@ -30,9 +33,9 @@ jobs:
 
       - uses: actions/setup-java@v4
         with:
-          distribution: temurin
+          distribution: 'temurin'
           java-version: '17'
-          cache: gradle
+          cache: 'gradle'
 
       - name: Preflight Android secret check
         if: github.event_name != 'pull_request'
@@ -73,9 +76,9 @@ jobs:
 
       - uses: actions/setup-java@v4
         with:
-          distribution: temurin
+          distribution: 'temurin'
           java-version: '17'
-          cache: gradle
+          cache: 'gradle'
 
       - name: Create local.properties
         working-directory: ${{ env.WORKING_DIR }}/android
