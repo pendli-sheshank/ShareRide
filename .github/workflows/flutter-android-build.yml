@@ -95,7 +95,7 @@ jobs:
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             PACKAGE_NAME=$(awk '
               match($0, /applicationId[[:space:]]*=[[:space:]]*["\047]([^"\047]+)["\047]/, m) { print m[1]; exit }
-            ' build.gradle app/build.gradle app/build.gradle.kts 2>/dev/null)
+            ' build.gradle build.gradle.kts 2>/dev/null)
             if [ -z "$PACKAGE_NAME" ]; then
               PACKAGE_NAME="com.placeholder.app"
             fi
@@ -111,7 +111,7 @@ jobs:
                   "client_info": {
                     "mobilesdk_app_id": "1:000000000000:android:placeholder",
                     "android_client_info": {
-                      "package_name": "__PACKAGE_NAME__"
+                      "package_name": "{{PACKAGE_NAME}}"
                     }
                   },
                   "api_key": [
@@ -124,7 +124,7 @@ jobs:
               "configuration_version": "1"
             }
             EOF
-            sed -i "s|__PACKAGE_NAME__|$PACKAGE_NAME|g" google-services.json
+            sed -i "s|{{PACKAGE_NAME}}|$PACKAGE_NAME|g" google-services.json
           else
             echo "${{ secrets.GOOGLE_SERVICES_JSON }}" | base64 --decode > google-services.json
           fi
