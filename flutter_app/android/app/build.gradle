@@ -3,6 +3,7 @@ plugins {
     id "org.jetbrains.kotlin.android"
     id "dev.flutter.flutter-gradle-plugin"
     id "com.google.gms.google-services"
+    id "com.google.firebase.crashlytics"
 }
 
 android {
@@ -26,8 +27,24 @@ android {
         versionName = flutter.versionName
     }
 
+    signingConfigs {
+        release {
+            storeFile = System.getenv("KEYSTORE_PATH") ? file(System.getenv("KEYSTORE_PATH")) : null
+            storePassword = System.getenv("KEYSTORE_PASSWORD")
+            keyAlias = System.getenv("KEY_ALIAS")
+            keyPassword = System.getenv("KEY_PASSWORD")
+        }
+    }
+
     buildTypes {
         release {
+            // Use release signing if keystore env vars are set, otherwise fall back to debug
+            signingConfig = System.getenv("KEYSTORE_PATH") ? signingConfigs.release : signingConfigs.debug
+            minifyEnabled = true
+            shrinkResources = true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        debug {
             signingConfig = signingConfigs.debug
         }
     }
@@ -55,6 +72,4 @@ dependencies {
 
     // Firebase Auth
     implementation "com.google.firebase:firebase-auth"
-
-    // Other Firebase dependencies are handled by flutter_tools and pubspec.yaml
 }
