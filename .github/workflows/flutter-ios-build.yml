@@ -38,7 +38,7 @@ jobs:
           [ ! -d ios/Runner.xcodeproj ] && MISSING+=("ios/Runner.xcodeproj")
           [ ! -f ios/Podfile ] && MISSING+=("ios/Podfile")
           if [ ${#MISSING[@]} -gt 0 ]; then
-            echo "::error::Missing iOS project files: ${MISSING[*]}. Ensure flutter_app/ios is committed before running this workflow."
+            echo "::error::Missing iOS project files: ${MISSING[*]}. Ensure ios/ under ${{ env.WORKING_DIR }} is committed before running this workflow."
             exit 1
           fi
 

@@ -44,8 +44,9 @@ jobs:
             echo "::error::GOOGLE_SERVICES_JSON secret is required for Android release builds."
             exit 1
           fi
-          echo "${{ secrets.GOOGLE_SERVICES_JSON }}" | base64 --decode | jq -e . >/dev/null || {
-            echo "::error::GOOGLE_SERVICES_JSON must be valid base64 that decodes to JSON."
+          echo "${{ secrets.GOOGLE_SERVICES_JSON }}" | base64 --decode | jq -e \
+            '.project_info and (.client | type == "array") and (.client | length > 0)' >/dev/null || {
+            echo "::error::GOOGLE_SERVICES_JSON must be valid base64 JSON with project_info and non-empty client."
             exit 1
           }
 
@@ -92,7 +93,9 @@ jobs:
         working-directory: ${{ env.WORKING_DIR }}/android/app
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            PACKAGE_NAME=$(sed -n 's/.*applicationId\s*=\s*"\([^"]*\)".*/\1/p' build.gradle | head -n1)
+            PACKAGE_NAME=$(awk '
+              match($0, /applicationId[[:space:]]*=[[:space:]]*["\047]([^"\047]+)["\047]/, m) { print m[1]; exit }
+            ' build.gradle app/build.gradle app/build.gradle.kts 2>/dev/null)
             if [ -z "$PACKAGE_NAME" ]; then
               PACKAGE_NAME="com.placeholder.app"
             fi
