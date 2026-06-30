@@ -44,12 +44,8 @@ jobs:
             echo "::error::GOOGLE_SERVICES_JSON secret is required for Android release builds."
             exit 1
           fi
-          echo "${{ secrets.GOOGLE_SERVICES_JSON }}" | base64 --decode > /tmp/google-services.json || {
-            echo "::error::GOOGLE_SERVICES_JSON must be valid base64 content."
-            exit 1
-          }
-          jq -e . /tmp/google-services.json >/dev/null || {
-            echo "::error::GOOGLE_SERVICES_JSON must decode to valid JSON."
+          echo "${{ secrets.GOOGLE_SERVICES_JSON }}" | base64 --decode | jq -e . >/dev/null || {
+            echo "::error::GOOGLE_SERVICES_JSON must be valid base64 that decodes to JSON."
             exit 1
           }
 
@@ -96,6 +92,10 @@ jobs:
         working-directory: ${{ env.WORKING_DIR }}/android/app
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
+            PACKAGE_NAME=$(sed -n 's/.*applicationId\s*=\s*"\([^"]*\)".*/\1/p' build.gradle | head -n1)
+            if [ -z "$PACKAGE_NAME" ]; then
+              PACKAGE_NAME="com.placeholder.app"
+            fi
             cat > google-services.json <<'EOF'
             {
               "project_info": {
@@ -108,7 +108,7 @@ jobs:
                   "client_info": {
                     "mobilesdk_app_id": "1:000000000000:android:placeholder",
                     "android_client_info": {
-                      "package_name": "com.sawaarishare.app"
+                      "package_name": "__PACKAGE_NAME__"
                     }
                   },
                   "api_key": [
@@ -121,6 +121,7 @@ jobs:
               "configuration_version": "1"
             }
             EOF
+            sed -i "s|__PACKAGE_NAME__|$PACKAGE_NAME|g" google-services.json
           else
             echo "${{ secrets.GOOGLE_SERVICES_JSON }}" | base64 --decode > google-services.json
           fi

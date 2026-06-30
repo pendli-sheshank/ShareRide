@@ -34,8 +34,11 @@ jobs:
       - name: Preflight iOS project check
         working-directory: ${{ env.WORKING_DIR }}
         run: |
-          if [ ! -d ios/Runner.xcodeproj ] || [ ! -f ios/Podfile ]; then
-            echo "::error::Missing ios project files. Ensure flutter_app/ios is committed before running this workflow."
+          MISSING=()
+          [ ! -d ios/Runner.xcodeproj ] && MISSING+=("ios/Runner.xcodeproj")
+          [ ! -f ios/Podfile ] && MISSING+=("ios/Podfile")
+          if [ ${#MISSING[@]} -gt 0 ]; then
+            echo "::error::Missing iOS project files: ${MISSING[*]}. Ensure flutter_app/ios is committed before running this workflow."
             exit 1
           fi
 
