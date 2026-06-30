@@ -135,8 +135,7 @@ jobs:
         working-directory: ${{ env.WORKING_DIR }}/android/app
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            PACKAGE_NAME="com.sawaarishare.app"
-            cat > google-services.json <<EOF
+            cat > google-services.json <<-'EOF'
             {
               "project_info": {
                 "project_number": "000000000000",
@@ -148,7 +147,7 @@ jobs:
                   "client_info": {
                     "mobilesdk_app_id": "1:000000000000:android:placeholder",
                     "android_client_info": {
-                      "package_name": "${PACKAGE_NAME}"
+                      "package_name": "com.sawaarishare.app"
                     }
                   },
                   "api_key": [{ "current_key": "placeholder" }]
@@ -237,4 +236,3 @@ jobs:
       - name: Clean up secrets
         if: always()
         run: rm -f /tmp/service-account.json
-
