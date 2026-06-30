@@ -1,0 +1,82 @@
+name: 'Setup Flutter Environment'
+description: 'Shared Flutter SDK setup, common secret preflight, and .env creation for ShareRide Android/iOS workflows'
+
+inputs:
+  flutter-version:
+    description: 'Flutter SDK version to install'
+    required: true
+  platform:
+    description: 'Platform identifier used in error messages (android or ios)'
+    required: true
+  is-pull-request:
+    description: '"true" to write placeholder .env values, "false" to write real secret values'
+    required: true
+  skip-secret-check:
+    description: '"true" to skip the common secret preflight (e.g. validate job on pull_request events)'
+    required: false
+    default: 'false'
+  supabase-url:
+    description: 'Value of the SUPABASE_URL secret (required unless skip-secret-check is true)'
+    required: false
+    default: ''
+  supabase-anon-key:
+    description: 'Value of the SUPABASE_ANON_KEY secret (required unless skip-secret-check is true)'
+    required: false
+    default: ''
+  firebase-project-id:
+    description: 'Value of the FIREBASE_PROJECT_ID secret (required unless skip-secret-check is true)'
+    required: false
+    default: ''
+  working-directory:
+    description: 'Directory containing pubspec.yaml and where .env should be written'
+    required: false
+    default: 'flutter_app'
+
+outputs:
+  env-file-path:
+    description: 'Absolute path to the generated .env file'
+    value: ${{ steps.write-env.outputs.path }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Flutter SDK
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: ${{ inputs.flutter-version }}
+        cache: true
+
+    - name: Common secret preflight (Supabase + Firebase)
+      if: inputs.skip-secret-check != 'true'
+      shell: bash
+      run: |
+        set -uo pipefail
+        MISSING=()
+        [ -z "${{ inputs.supabase-url }}" ] && MISSING+=("SUPABASE_URL")
+        [ -z "${{ inputs.supabase-anon-key }}" ] && MISSING+=("SUPABASE_ANON_KEY")
+        [ -z "${{ inputs.firebase-project-id }}" ] && MISSING+=("FIREBASE_PROJECT_ID")
+        if [ ${#MISSING[@]} -gt 0 ]; then
+          echo "::error::[${{ inputs.platform }}] Missing required secrets: ${MISSING[*]}"
+          exit 1
+        fi
+
+    - name: Create .env file
+      id: write-env
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        set -euo pipefail
+        if [ "${{ inputs.is-pull-request }}" = "true" ]; then
+          printf '%s\n' \
+            "SUPABASE_URL=https://placeholder.supabase.co" \
+            "SUPABASE_ANON_KEY=placeholder-anon-key" \
+            "FIREBASE_PROJECT_ID=placeholder-project" \
+            > .env
+        else
+          printf '%s\n' \
+            "SUPABASE_URL=${{ inputs.supabase-url }}" \
+            "SUPABASE_ANON_KEY=${{ inputs.supabase-anon-key }}" \
+            "FIREBASE_PROJECT_ID=${{ inputs.firebase-project-id }}" \
+            > .env
+        fi
+        echo "path=$(pwd)/.env" >> "$GITHUB_OUTPUT"

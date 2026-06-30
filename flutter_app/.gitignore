@@ -103,6 +103,9 @@ ios/Runner/GoogleService-Info.plist
 .env.local
 .env.*.local
 
+# Generated from ExportOptions.plist.template at CI time (contains real team ID)
+ios/ExportOptions.plist
+
 # Code generation
 .dart_tool/
 build/

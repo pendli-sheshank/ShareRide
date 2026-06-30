@@ -17,6 +17,7 @@ permissions:
 env:
   FLUTTER_VERSION: '3.22.0'
   WORKING_DIR: flutter_app
+  ANDROID_PACKAGE_NAME: com.sawaarishare.app
 
 jobs:
   validate:
@@ -26,10 +27,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: subosito/flutter-action@v2
+      - name: Setup Flutter environment
+        uses: ./.github/actions/setup-flutter-env
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
-          cache: true
+          platform: android
+          is-pull-request: ${{ github.event_name == 'pull_request' }}
+          skip-secret-check: ${{ github.event_name == 'pull_request' }}
+          supabase-url: ${{ secrets.SUPABASE_URL }}
+          supabase-anon-key: ${{ secrets.SUPABASE_ANON_KEY }}
+          firebase-project-id: ${{ secrets.FIREBASE_PROJECT_ID }}
+          working-directory: ${{ env.WORKING_DIR }}
 
       - uses: actions/setup-java@v4
         with:
@@ -40,25 +48,25 @@ jobs:
       - name: Re-create Android project if missing
         working-directory: ${{ env.WORKING_DIR }}
         run: |
+          set -euo pipefail
           if [ ! -d android ] || [ ! -f android/build.gradle ]; then
             echo "Android project files are missing. Re-creating Android project..."
             flutter create . --platforms=android --org com.sawaarishare
           fi
 
-      - name: Preflight Android secret check
+      - name: Preflight Android-specific secret check
         if: github.event_name != 'pull_request'
         run: |
+          set -uo pipefail
           MISSING=()
           [ -z "${{ secrets.GOOGLE_SERVICES_JSON }}" ] && MISSING+=("GOOGLE_SERVICES_JSON")
-          [ -z "${{ secrets.SUPABASE_URL }}" ] && MISSING+=("SUPABASE_URL")
-          [ -z "${{ secrets.SUPABASE_ANON_KEY }}" ] && MISSING+=("SUPABASE_ANON_KEY")
           [ -z "${{ secrets.KEYSTORE_FILE }}" ] && MISSING+=("KEYSTORE_FILE")
           [ -z "${{ secrets.KEYSTORE_PASSWORD }}" ] && MISSING+=("KEYSTORE_PASSWORD")
           [ -z "${{ secrets.KEY_ALIAS }}" ] && MISSING+=("KEY_ALIAS")
           [ -z "${{ secrets.KEY_PASSWORD }}" ] && MISSING+=("KEY_PASSWORD")
           [ -z "${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}" ] && MISSING+=("GOOGLE_SERVICE_ACCOUNT_KEY")
           if [ ${#MISSING[@]} -gt 0 ]; then
-            echo "::error::Missing required secrets: ${MISSING[*]}"
+            echo "::error::[android] Missing required secrets: ${MISSING[*]}"
             exit 1
           fi
           echo "${{ secrets.GOOGLE_SERVICES_JSON }}" | base64 --decode | jq -e \
@@ -91,10 +99,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: subosito/flutter-action@v2
+      - name: Setup Flutter environment
+        uses: ./.github/actions/setup-flutter-env
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
-          cache: true
+          platform: android
+          is-pull-request: ${{ github.event_name == 'pull_request' }}
+          skip-secret-check: ${{ github.event_name == 'pull_request' }}
+          supabase-url: ${{ secrets.SUPABASE_URL }}
+          supabase-anon-key: ${{ secrets.SUPABASE_ANON_KEY }}
+          firebase-project-id: ${{ secrets.FIREBASE_PROJECT_ID }}
+          working-directory: ${{ env.WORKING_DIR }}
 
       - uses: actions/setup-java@v4
         with:
@@ -105,6 +120,7 @@ jobs:
       - name: Re-create Android project if missing
         working-directory: ${{ env.WORKING_DIR }}
         run: |
+          set -euo pipefail
           if [ ! -d android ] || [ ! -f android/build.gradle ]; then
             echo "Android project files are missing. Re-creating Android project..."
             flutter create . --platforms=android --org com.sawaarishare
@@ -114,48 +130,32 @@ jobs:
         working-directory: ${{ env.WORKING_DIR }}/android
         run: echo "flutter.sdk=$FLUTTER_ROOT" > local.properties
 
-      - name: Create .env file
-        working-directory: ${{ env.WORKING_DIR }}
-        run: |
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            printf '%s\n' \
-              "SUPABASE_URL=https://placeholder.supabase.co" \
-              "SUPABASE_ANON_KEY=placeholder-anon-key" \
-              "FIREBASE_PROJECT_ID=placeholder-project" \
-              > .env
-          else
-            printf '%s\n' \
-              "SUPABASE_URL=${{ secrets.SUPABASE_URL }}" \
-              "SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}" \
-              "FIREBASE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }}" \
-              > .env
-          fi
-
       - name: Create google-services.json
         working-directory: ${{ env.WORKING_DIR }}/android/app
         run: |
+          set -euo pipefail
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             cat > google-services.json <<'EOF'
-{
-  "project_info": {
-    "project_number": "000000000000",
-    "project_id": "placeholder-project",
-    "storage_bucket": "placeholder-project.appspot.com"
-  },
-  "client": [
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:000000000000:android:placeholder",
-        "android_client_info": {
-          "package_name": "com.sawaarishare.app"
-        }
-      },
-      "api_key": [{ "current_key": "placeholder" }]
-    }
-  ],
-  "configuration_version": "1"
-}
-EOF
+          {
+            "project_info": {
+              "project_number": "000000000000",
+              "project_id": "placeholder-project",
+              "storage_bucket": "placeholder-project.appspot.com"
+            },
+            "client": [
+              {
+                "client_info": {
+                  "mobilesdk_app_id": "1:000000000000:android:placeholder",
+                  "android_client_info": {
+                    "package_name": "com.sawaarishare.app"
+                  }
+                },
+                "api_key": [{ "current_key": "placeholder" }]
+              }
+            ],
+            "configuration_version": "1"
+          }
+          EOF
           else
             echo "${{ secrets.GOOGLE_SERVICES_JSON }}" | base64 --decode > google-services.json
           fi
@@ -163,6 +163,7 @@ EOF
       - name: Setup release keystore
         if: github.event_name != 'pull_request'
         run: |
+          set -euo pipefail
           echo "${{ secrets.KEYSTORE_FILE }}" | base64 --decode > /tmp/shareride.keystore
           echo "KEYSTORE_PATH=/tmp/shareride.keystore" >> $GITHUB_ENV
 
@@ -179,7 +180,6 @@ EOF
         if: github.event_name != 'pull_request'
         working-directory: ${{ env.WORKING_DIR }}
         env:
-          KEYSTORE_PATH: /tmp/shareride.keystore
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
@@ -189,7 +189,7 @@ EOF
         if: github.event_name == 'pull_request'
         uses: actions/upload-artifact@v4
         with:
-          name: app-pr-validation.apk
+          name: android-apk-pr-validation
           path: ${{ env.WORKING_DIR }}/build/app/outputs/flutter-apk/app-release.apk
           if-no-files-found: error
           retention-days: 7
@@ -198,7 +198,7 @@ EOF
         if: github.event_name != 'pull_request'
         uses: actions/upload-artifact@v4
         with:
-          name: app-release.aab
+          name: android-aab-release
           path: ${{ env.WORKING_DIR }}/build/app/outputs/bundle/release/app-release.aab
           if-no-files-found: error
           retention-days: 7
@@ -217,7 +217,7 @@ EOF
       - name: Download AAB artifact
         uses: actions/download-artifact@v4
         with:
-          name: app-release.aab
+          name: android-aab-release
           path: /tmp/aab
 
       - name: Decode service account key
