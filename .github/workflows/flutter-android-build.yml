@@ -40,8 +40,12 @@ jobs:
       - name: Preflight Android secret check
         if: github.event_name != 'pull_request'
         run: |
-          if [ -z "${{ secrets.GOOGLE_SERVICES_JSON }}" ]; then
-            echo "::error::GOOGLE_SERVICES_JSON secret is required for Android release builds."
+          MISSING=()
+          [ -z "${{ secrets.GOOGLE_SERVICES_JSON }}" ] && MISSING+=("GOOGLE_SERVICES_JSON")
+          [ -z "${{ secrets.SUPABASE_URL }}" ] && MISSING+=("SUPABASE_URL")
+          [ -z "${{ secrets.SUPABASE_ANON_KEY }}" ] && MISSING+=("SUPABASE_ANON_KEY")
+          if [ ${#MISSING[@]} -gt 0 ]; then
+            echo "::error::Missing required secrets: ${MISSING[*]}"
             exit 1
           fi
           echo "${{ secrets.GOOGLE_SERVICES_JSON }}" | base64 --decode | jq -e \
@@ -88,6 +92,23 @@ jobs:
       - name: Create local.properties
         working-directory: ${{ env.WORKING_DIR }}/android
         run: echo "flutter.sdk=$FLUTTER_ROOT" > local.properties
+
+      - name: Create .env file
+        working-directory: ${{ env.WORKING_DIR }}
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            cat > .env <<EOF
+          SUPABASE_URL=https://placeholder.supabase.co
+          SUPABASE_ANON_KEY=placeholder-anon-key
+          FIREBASE_PROJECT_ID=placeholder-project
+          EOF
+          else
+            cat > .env <<EOF
+          SUPABASE_URL=${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}
+          FIREBASE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }}
+          EOF
+          fi
 
       - name: Create google-services.json
         working-directory: ${{ env.WORKING_DIR }}/android/app
