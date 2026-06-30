@@ -31,15 +31,12 @@ jobs:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true
 
-      - name: Preflight iOS project check
+      - name: Re-create iOS project if missing
         working-directory: ${{ env.WORKING_DIR }}
         run: |
-          MISSING=()
-          [ ! -d ios/Runner.xcodeproj ] && MISSING+=("ios/Runner.xcodeproj")
-          [ ! -f ios/Podfile ] && MISSING+=("ios/Podfile")
-          if [ ${#MISSING[@]} -gt 0 ]; then
-            echo "::error::Missing iOS project files: ${MISSING[*]}. Ensure ios/ under ${{ env.WORKING_DIR }} is committed before running this workflow."
-            exit 1
+          if [ ! -d ios/Runner.xcodeproj ] || [ ! -f ios/Podfile ]; then
+            echo "iOS project files are missing. Re-creating iOS project..."
+            flutter create . --platforms=ios --org com.sawaarishare
           fi
 
       - name: Preflight iOS secret check
@@ -82,6 +79,14 @@ jobs:
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true
+
+      - name: Re-create iOS project if missing
+        working-directory: ${{ env.WORKING_DIR }}
+        run: |
+          if [ ! -d ios/Runner.xcodeproj ] || [ ! -f ios/Podfile ]; then
+            echo "iOS project files are missing. Re-creating iOS project..."
+            flutter create . --platforms=ios --org com.sawaarishare
+          fi
 
       - name: Get dependencies
         working-directory: ${{ env.WORKING_DIR }}
