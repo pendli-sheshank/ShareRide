@@ -1,4 +1,4 @@
-name: Android Build
+name: Android Build & Deploy
 
 on:
   push:
@@ -40,8 +40,17 @@ jobs:
       - name: Preflight Android secret check
         if: github.event_name != 'pull_request'
         run: |
-          if [ -z "${{ secrets.GOOGLE_SERVICES_JSON }}" ]; then
-            echo "::error::GOOGLE_SERVICES_JSON secret is required for Android release builds."
+          MISSING=()
+          [ -z "${{ secrets.GOOGLE_SERVICES_JSON }}" ] && MISSING+=("GOOGLE_SERVICES_JSON")
+          [ -z "${{ secrets.SUPABASE_URL }}" ] && MISSING+=("SUPABASE_URL")
+          [ -z "${{ secrets.SUPABASE_ANON_KEY }}" ] && MISSING+=("SUPABASE_ANON_KEY")
+          [ -z "${{ secrets.KEYSTORE_FILE }}" ] && MISSING+=("KEYSTORE_FILE")
+          [ -z "${{ secrets.KEYSTORE_PASSWORD }}" ] && MISSING+=("KEYSTORE_PASSWORD")
+          [ -z "${{ secrets.KEY_ALIAS }}" ] && MISSING+=("KEY_ALIAS")
+          [ -z "${{ secrets.KEY_PASSWORD }}" ] && MISSING+=("KEY_PASSWORD")
+          [ -z "${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}" ] && MISSING+=("GOOGLE_SERVICE_ACCOUNT_KEY")
+          if [ ${#MISSING[@]} -gt 0 ]; then
+            echo "::error::Missing required secrets: ${MISSING[*]}"
             exit 1
           fi
           echo "${{ secrets.GOOGLE_SERVICES_JSON }}" | base64 --decode | jq -e \
@@ -67,7 +76,7 @@ jobs:
         run: flutter test
 
   build-android:
-    name: Build Android APK
+    name: Build Android
     runs-on: ubuntu-latest
     needs: validate
     timeout-minutes: 35
@@ -93,13 +102,8 @@ jobs:
         working-directory: ${{ env.WORKING_DIR }}/android/app
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            PACKAGE_NAME=$(awk '
-              match($0, /applicationId[[:space:]]*=[[:space:]]*["\047]([^"\047]+)["\047]/, m) { print m[1]; exit }
-            ' build.gradle build.gradle.kts 2>/dev/null)
-            if [ -z "$PACKAGE_NAME" ]; then
-              PACKAGE_NAME="com.placeholder.app"
-            fi
-            cat > google-services.json <<'EOF'
+            PACKAGE_NAME="com.sawaarishare.app"
+            cat > google-services.json <<EOF
             {
               "project_info": {
                 "project_number": "000000000000",
@@ -111,36 +115,110 @@ jobs:
                   "client_info": {
                     "mobilesdk_app_id": "1:000000000000:android:placeholder",
                     "android_client_info": {
-                      "package_name": "{{PACKAGE_NAME}}"
+                      "package_name": "${PACKAGE_NAME}"
                     }
                   },
-                  "api_key": [
-                    {
-                      "current_key": "placeholder"
-                    }
-                  ]
+                  "api_key": [{ "current_key": "placeholder" }]
                 }
               ],
               "configuration_version": "1"
             }
             EOF
-            sed -i "s|{{PACKAGE_NAME}}|$PACKAGE_NAME|g" google-services.json
           else
             echo "${{ secrets.GOOGLE_SERVICES_JSON }}" | base64 --decode > google-services.json
           fi
+
+      - name: Create .env file
+        working-directory: ${{ env.WORKING_DIR }}
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            cat > .env <<EOF
+          SUPABASE_URL=https://placeholder.supabase.co
+          SUPABASE_ANON_KEY=placeholder-anon-key
+          FIREBASE_PROJECT_ID=placeholder-project
+          EOF
+          else
+            cat > .env <<EOF
+          SUPABASE_URL=${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}
+          FIREBASE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }}
+          EOF
+          fi
+
+      - name: Setup release keystore
+        if: github.event_name != 'pull_request'
+        run: |
+          echo "${{ secrets.KEYSTORE_FILE }}" | base64 --decode > /tmp/shareride.keystore
+          echo "KEYSTORE_PATH=/tmp/shareride.keystore" >> $GITHUB_ENV
 
       - name: Get dependencies
         working-directory: ${{ env.WORKING_DIR }}
         run: flutter pub get
 
-      - name: Build APK
+      - name: Build APK (PR validation)
+        if: github.event_name == 'pull_request'
         working-directory: ${{ env.WORKING_DIR }}
         run: flutter build apk --release --target-platform android-arm64
 
-      - name: Upload APK artifact
+      - name: Build AAB (release)
+        if: github.event_name != 'pull_request'
+        working-directory: ${{ env.WORKING_DIR }}
+        env:
+          KEYSTORE_PATH: /tmp/shareride.keystore
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: flutter build appbundle --release
+
+      - name: Upload APK artifact (PR)
+        if: github.event_name == 'pull_request'
         uses: actions/upload-artifact@v4
         with:
-          name: app-release.apk
+          name: app-pr-validation.apk
           path: ${{ env.WORKING_DIR }}/build/app/outputs/flutter-apk/app-release.apk
           if-no-files-found: error
           retention-days: 7
+
+      - name: Upload AAB artifact (release)
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release.aab
+          path: ${{ env.WORKING_DIR }}/build/app/outputs/bundle/release/app-release.aab
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Clean up keystore
+        if: always()
+        run: rm -f /tmp/shareride.keystore
+
+  deploy-play-store:
+    name: Deploy to Play Store (Internal Testing)
+    runs-on: ubuntu-latest
+    needs: build-android
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    timeout-minutes: 15
+    steps:
+      - name: Download AAB artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: app-release.aab
+          path: /tmp/aab
+
+      - name: Decode service account key
+        run: echo "${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}" | base64 --decode > /tmp/service-account.json
+
+      - name: Upload to Play Store (Internal Testing)
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJson: /tmp/service-account.json
+          packageName: com.sawaarishare.app
+          releaseFiles: /tmp/aab/app-release.aab
+          track: internal
+          status: completed
+          changesNotSentForReview: true
+
+      - name: Clean up secrets
+        if: always()
+        run: rm -f /tmp/service-account.json
+
