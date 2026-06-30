@@ -1,4 +1,4 @@
-name: iOS Build
+name: iOS Build & Deploy
 
 on:
   push:
@@ -17,6 +17,7 @@ permissions:
 env:
   FLUTTER_VERSION: '3.22.0'
   WORKING_DIR: flutter_app
+  IOS_BUNDLE_ID: com.sawaarishare.app
 
 jobs:
   validate:
@@ -26,28 +27,26 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: subosito/flutter-action@v2
+      - name: Setup Flutter environment
+        uses: ./.github/actions/setup-flutter-env
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
-          cache: true
+          platform: ios
+          is-pull-request: ${{ github.event_name == 'pull_request' }}
+          skip-secret-check: ${{ github.event_name == 'pull_request' }}
+          supabase-url: ${{ secrets.SUPABASE_URL }}
+          supabase-anon-key: ${{ secrets.SUPABASE_ANON_KEY }}
+          firebase-project-id: ${{ secrets.FIREBASE_PROJECT_ID }}
+          working-directory: ${{ env.WORKING_DIR }}
 
-      - name: Re-create iOS project if missing
-        working-directory: ${{ env.WORKING_DIR }}
-        run: |
-          if [ ! -d ios/Runner.xcodeproj ] || [ ! -f ios/Podfile ]; then
-            echo "iOS project files are missing. Re-creating iOS project..."
-            flutter create . --platforms=ios --org com.sawaarishare
-          fi
-
-      - name: Preflight iOS secret check
+      - name: Preflight iOS-specific secret check
         if: github.event_name != 'pull_request'
         run: |
+          set -uo pipefail
           MISSING=()
           [ -z "${{ secrets.GOOGLESERVICE_INFO_PLIST }}" ] && MISSING+=("GOOGLESERVICE_INFO_PLIST")
-          [ -z "${{ secrets.SUPABASE_URL }}" ] && MISSING+=("SUPABASE_URL")
-          [ -z "${{ secrets.SUPABASE_ANON_KEY }}" ] && MISSING+=("SUPABASE_ANON_KEY")
           if [ ${#MISSING[@]} -gt 0 ]; then
-            echo "::error::Missing required secrets: ${MISSING[*]}"
+            echo "::error::[ios] Missing required secrets: ${MISSING[*]}"
             exit 1
           fi
 
@@ -68,24 +67,49 @@ jobs:
         run: flutter test
 
   build-ios:
-    name: Build iOS App
+    name: Build iOS
     runs-on: macos-latest
     needs: validate
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
 
-      - uses: subosito/flutter-action@v2
+      - name: Setup Flutter environment
+        uses: ./.github/actions/setup-flutter-env
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
-          cache: true
+          platform: ios
+          is-pull-request: ${{ github.event_name == 'pull_request' }}
+          skip-secret-check: ${{ github.event_name == 'pull_request' }}
+          supabase-url: ${{ secrets.SUPABASE_URL }}
+          supabase-anon-key: ${{ secrets.SUPABASE_ANON_KEY }}
+          firebase-project-id: ${{ secrets.FIREBASE_PROJECT_ID }}
+          working-directory: ${{ env.WORKING_DIR }}
 
       - name: Re-create iOS project if missing
         working-directory: ${{ env.WORKING_DIR }}
         run: |
+          set -euo pipefail
           if [ ! -d ios/Runner.xcodeproj ] || [ ! -f ios/Podfile ]; then
             echo "iOS project files are missing. Re-creating iOS project..."
             flutter create . --platforms=ios --org com.sawaarishare
+          fi
+
+      - name: Preflight iOS signing secret check
+        if: github.event_name != 'pull_request'
+        run: |
+          set -uo pipefail
+          MISSING=()
+          [ -z "${{ secrets.IOS_DIST_CERTIFICATE_BASE64 }}" ] && MISSING+=("IOS_DIST_CERTIFICATE_BASE64")
+          [ -z "${{ secrets.IOS_DIST_CERTIFICATE_PASSWORD }}" ] && MISSING+=("IOS_DIST_CERTIFICATE_PASSWORD")
+          [ -z "${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}" ] && MISSING+=("IOS_PROVISIONING_PROFILE_BASE64")
+          [ -z "${{ secrets.IOS_TEAM_ID }}" ] && MISSING+=("IOS_TEAM_ID")
+          [ -z "${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}" ] && MISSING+=("APP_STORE_CONNECT_API_KEY_ID")
+          [ -z "${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}" ] && MISSING+=("APP_STORE_CONNECT_API_ISSUER_ID")
+          [ -z "${{ secrets.APP_STORE_CONNECT_API_KEY_BASE64 }}" ] && MISSING+=("APP_STORE_CONNECT_API_KEY_BASE64")
+          if [ ${#MISSING[@]} -gt 0 ]; then
+            echo "::error::[ios] Missing required signing/TestFlight secrets: ${MISSING[*]}"
+            exit 1
           fi
 
       - name: Get dependencies
@@ -95,52 +119,48 @@ jobs:
       - name: Create GoogleService-Info.plist
         working-directory: ${{ env.WORKING_DIR }}/ios/Runner
         run: |
+          set -euo pipefail
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            printf '%s\n' \
-              '<?xml version="1.0" encoding="UTF-8"?>' \
-              '<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">' \
-              '<plist version="1.0">' \
-              '<dict>' \
-              '  <key>API_KEY</key><string>placeholder</string>' \
-              '  <key>GCM_SENDER_ID</key><string>000000000000</string>' \
-              '  <key>PLIST_VERSION</key><string>1</string>' \
-              '  <key>BUNDLE_ID</key><string>com.placeholder.app</string>' \
-              '  <key>PROJECT_ID</key><string>placeholder-project</string>' \
-              '  <key>STORAGE_BUCKET</key><string>placeholder-project.appspot.com</string>' \
-              '  <key>IS_ADS_ENABLED</key><false/>' \
-              '  <key>IS_ANALYTICS_ENABLED</key><false/>' \
-              '  <key>IS_APPINVITE_ENABLED</key><true/>' \
-              '  <key>IS_GCM_ENABLED</key><true/>' \
-              '  <key>IS_SIGNIN_ENABLED</key><true/>' \
-              '  <key>GOOGLE_APP_ID</key><string>1:000000000000:ios:placeholder</string>' \
-              '</dict>' \
-              '</plist>' \
-              > GoogleService-Info.plist
+            cat > GoogleService-Info.plist <<'EOF'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>API_KEY</key>
+            <string>placeholder</string>
+            <key>GCM_SENDER_ID</key>
+            <string>000000000000</string>
+            <key>PLIST_VERSION</key>
+            <string>1</string>
+            <key>BUNDLE_ID</key>
+            <string>com.sawaarishare.app</string>
+            <key>PROJECT_ID</key>
+            <string>placeholder-project</string>
+            <key>STORAGE_BUCKET</key>
+            <string>placeholder-project.appspot.com</string>
+            <key>IS_ADS_ENABLED</key>
+            <false/>
+            <key>IS_ANALYTICS_ENABLED</key>
+            <false/>
+            <key>IS_APPINVITE_ENABLED</key>
+            <true/>
+            <key>IS_GCM_ENABLED</key>
+            <true/>
+            <key>IS_SIGNIN_ENABLED</key>
+            <true/>
+            <key>GOOGLE_APP_ID</key>
+            <string>1:000000000000:ios:placeholder</string>
+          </dict>
+          </plist>
+          EOF
           else
             echo "${{ secrets.GOOGLESERVICE_INFO_PLIST }}" | base64 --decode > GoogleService-Info.plist
-          fi
-
-      - name: Create .env file
-        working-directory: ${{ env.WORKING_DIR }}
-        run: |
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            printf '%s\n' \
-              "SUPABASE_URL=https://placeholder.supabase.co" \
-              "SUPABASE_ANON_KEY=placeholder-anon-key" \
-              "FIREBASE_PROJECT_ID=placeholder-project" \
-              > .env
-          else
-            printf '%s\n' \
-              "SUPABASE_URL=${{ secrets.SUPABASE_URL }}" \
-              "SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}" \
-              "FIREBASE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }}" \
-              > .env
           fi
 
       - name: Install CocoaPods dependencies
         working-directory: ${{ env.WORKING_DIR }}/ios
         run: |
-          pod install --repo-update
+          pod install --repo-update || { echo "::error::pod install failed - check Podfile and CocoaPods repo state."; exit 1; }
 
       - name: Verify iOS workspace
         working-directory: ${{ env.WORKING_DIR }}
@@ -150,27 +170,126 @@ jobs:
             exit 1
           fi
 
-      - name: Build iOS (Release)
+      - name: Configure code signing
+        if: github.event_name != 'pull_request'
+        run: |
+          set -euo pipefail
+          KEYCHAIN_PWD="$(openssl rand -base64 32)"
+          security create-keychain -p "$KEYCHAIN_PWD" build.keychain
+          security set-keychain-settings -lut 21600 build.keychain
+          security unlock-keychain -p "$KEYCHAIN_PWD" build.keychain
+
+          echo "${{ secrets.IOS_DIST_CERTIFICATE_BASE64 }}" | base64 --decode > /tmp/dist_cert.p12
+          security import /tmp/dist_cert.p12 -k build.keychain \
+            -P "${{ secrets.IOS_DIST_CERTIFICATE_PASSWORD }}" -T /usr/bin/codesign
+          rm -f /tmp/dist_cert.p12
+
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PWD" build.keychain
+          security list-keychains -d user -s build.keychain $(security list-keychains -d user | sed 's/"//g')
+
+          mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
+          echo "${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}" | base64 --decode > /tmp/profile.mobileprovision
+          PROFILE_UUID=$(security cms -D -i /tmp/profile.mobileprovision | plutil -extract UUID xml1 -o - - | sed -n 's/.*<string>\(.*\)<\/string>.*/\1/p')
+          cp /tmp/profile.mobileprovision "$HOME/Library/MobileDevice/Provisioning Profiles/${PROFILE_UUID}.mobileprovision"
+          rm -f /tmp/profile.mobileprovision
+
+      - name: Generate ExportOptions.plist
+        if: github.event_name != 'pull_request'
         working-directory: ${{ env.WORKING_DIR }}
         run: |
-          flutter build ios \
-            --release \
-            --no-codesign
+          set -euo pipefail
+          sed "s/__TEAM_ID__/${{ secrets.IOS_TEAM_ID }}/" ios/ExportOptions.plist.template > ios/ExportOptions.plist
 
-      - name: Create IPA
+      - name: Build iOS (PR validation, unsigned)
+        if: github.event_name == 'pull_request'
+        working-directory: ${{ env.WORKING_DIR }}
+        run: flutter build ios --release --no-codesign
+
+      - name: Create IPA (PR validation, unsigned)
+        if: github.event_name == 'pull_request'
+        working-directory: ${{ env.WORKING_DIR }}
         run: |
-          cd ${{ env.WORKING_DIR }}/build/ios/Release-iphoneos
-          mkdir -p Payload
-          cp -r Runner.app Payload/
-          cd Payload
-          zip -r ../app-release.ipa Runner.app >/dev/null 2>&1
-          cd ..
-          ls -lh app-release.ipa
+          set -euo pipefail
+          APP_PATH="build/ios/Release-iphoneos/Runner.app"
+          if [ ! -d "$APP_PATH" ]; then
+            echo "::error::Runner.app not found at $APP_PATH - flutter build ios did not produce expected output."
+            exit 1
+          fi
+          BUILD_DIR="build/ios/Release-iphoneos"
+          (
+            cd "$BUILD_DIR"
+            mkdir -p Payload
+            cp -r Runner.app Payload/
+            zip -r app-release.ipa Payload
+          )
+          ls -lh "$BUILD_DIR/app-release.ipa"
 
-      - name: Upload IPA artifact
+      - name: Build & export signed IPA (release)
+        if: github.event_name != 'pull_request'
+        working-directory: ${{ env.WORKING_DIR }}
+        run: flutter build ipa --release --export-options-plist=ios/ExportOptions.plist
+
+      - name: Verify signed IPA output
+        if: github.event_name != 'pull_request'
+        working-directory: ${{ env.WORKING_DIR }}
+        run: |
+          set -euo pipefail
+          if ! ls build/ios/ipa/*.ipa >/dev/null 2>&1; then
+            echo "::error::No .ipa file found in build/ios/ipa/ after flutter build ipa."
+            exit 1
+          fi
+          ls -lh build/ios/ipa/*.ipa
+
+      - name: Upload IPA artifact (PR)
+        if: github.event_name == 'pull_request'
         uses: actions/upload-artifact@v4
         with:
-          name: app-release.ipa
+          name: ios-ipa-pr-validation
           path: ${{ env.WORKING_DIR }}/build/ios/Release-iphoneos/app-release.ipa
           if-no-files-found: error
           retention-days: 7
+
+      - name: Upload IPA artifact (release)
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-ipa-release
+          path: ${{ env.WORKING_DIR }}/build/ios/ipa/*.ipa
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Clean up signing keychain
+        if: always() && github.event_name != 'pull_request'
+        run: security delete-keychain build.keychain || true
+
+  deploy-testflight:
+    name: Deploy to TestFlight
+    runs-on: ubuntu-latest
+    needs: build-ios
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    timeout-minutes: 15
+    steps:
+      - name: Download IPA artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ios-ipa-release
+          path: /tmp/ipa
+
+      - name: Locate IPA file
+        id: locate-ipa
+        run: |
+          set -euo pipefail
+          IPA_PATH=$(find /tmp/ipa -name '*.ipa' -print -quit)
+          if [ -z "$IPA_PATH" ]; then
+            echo "::error::No .ipa file found in downloaded artifact."
+            exit 1
+          fi
+          echo "path=$IPA_PATH" >> "$GITHUB_OUTPUT"
+
+      - name: Upload to TestFlight
+        uses: apple-actions/upload-testflight-build@v1
+        with:
+          app-path: ${{ steps.locate-ipa.outputs.path }}
+          api-key-id: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          api-issuer-id: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
+          api-private-key: ${{ secrets.APP_STORE_CONNECT_API_KEY_BASE64 }}
