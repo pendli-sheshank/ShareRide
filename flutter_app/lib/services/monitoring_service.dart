@@ -105,17 +105,17 @@ class MonitoringService {
 
   /// Log breadcrumb for debugging
   void logBreadcrumb(String message, {String? category, String? level}) {
-    final breadcrumbParts = <String>[
-      if (level != null) level,
-      if (category != null) category,
-      message,
-    ];
+    final breadcrumb = [
+      if (level != null) 'level=$level',
+      if (category != null) 'category=$category',
+      'message=$message',
+    ].join(' ');
 
     try {
-      FirebaseCrashlytics.instance.log(breadcrumbParts.join(': '));
+      FirebaseCrashlytics.instance.log(breadcrumb);
     } catch (e, stackTrace) {
       developer.log(
-        'Failed to write Crashlytics breadcrumb: ${breadcrumbParts.join(': ')}',
+        'Failed to write Crashlytics breadcrumb: $breadcrumb',
         name: category ?? 'MonitoringService',
         error: e,
         stackTrace: stackTrace,
@@ -136,9 +136,11 @@ class MonitoringService {
         reason: context,
       );
     } catch (e, errorStackTrace) {
+      final errorMessage =
+          'Failed to record exception${context != null ? ' ($context)' : ''}: '
+          '$exception';
       developer.log(
-        'Failed to record Crashlytics exception: '
-        '${context == null ? exception.toString() : '$context: $exception'}',
+        errorMessage,
         name: 'MonitoringService',
         error: e,
         stackTrace: errorStackTrace,
